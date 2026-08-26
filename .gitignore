@@ -1,0 +1,8 @@
+node_modules/
+dist/
+src-tauri/target/
+*.log
+*.key
+*.key.pub
+release-output/
+.DS_Store
