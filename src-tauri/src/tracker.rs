@@ -61,7 +61,7 @@ pub async fn fetch_tracker_profile(public_id: String) -> Result<Value, String> {
 
     let client = Client::builder()
         .timeout(Duration::from_secs(15))
-        .user_agent("SquadraPresence/0.6.1 (+local desktop companion)")
+        .user_agent("SquadraPresence/0.6.2 (+local desktop companion)")
         .build()
         .map_err(|error| format!("Could not initialize tracker networking: {error}"))?;
 
@@ -125,7 +125,7 @@ pub async fn fetch_hero_abilities(hero_id: String) -> Result<Vec<AbilityReferenc
 
     let client = Client::builder()
         .timeout(Duration::from_secs(12))
-        .user_agent("SquadraPresence/0.6.1 (+local desktop companion)")
+        .user_agent("SquadraPresence/0.6.2 (+local desktop companion)")
         .build()
         .map_err(|error| format!("Could not initialize reference networking: {error}"))?;
     let candidates = [
@@ -192,7 +192,7 @@ pub async fn fetch_build_guide(source_url: String) -> Result<BuildGuideSource, S
         .ok_or_else(|| "Only published DBGS Builds guide URLs are supported.".to_string())?;
     let client = Client::builder()
         .timeout(Duration::from_secs(15))
-        .user_agent("SquadraPresence/0.6.1 (+local desktop companion)")
+        .user_agent("SquadraPresence/0.6.2 (+local desktop companion)")
         .build()
         .map_err(|error| format!("Could not initialize guide networking: {error}"))?;
     let response = client

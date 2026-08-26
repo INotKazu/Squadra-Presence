@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.6.2
+
+- Extended the manual KazuCorp cold-launch sequence from 3.2 to 4 seconds while preserving hidden-startup and tray-restore skipping.
+- Fixed Damage and Technical RP trend charts accidentally filling the SVG line, which created large colored wedges whenever RP dropped and recovered.
+- Displays `VOID`, cancelled, draw, and no-contest results as neutral yellow outcomes and excludes them from win-rate, average-performance, MVP, and most-played calculations.
+- Added season-aware History journals with a current-season tab, preserved archived-season tabs, and a Career match view that never connects RP graphs across scheduled rank resets.
+- Migrates existing local history into Season 6 automatically and upgrades backups to format v3 while retaining v1 and v2 restore compatibility.
+- Added the Squadra Presence Personal-Use License and KazuCorp Brand Policy, including explicit protection for the official Discord identity and signed update channel.
+- Added `Release-All.ps1`, a guarded one-command Windows workflow that tests, builds, signs, prepares, and publishes a complete updater release while keeping the private key local.
+- Expanded the frontend regression suite to 57 tests, including neutral VOID scoring, legacy season migration, archived-season filtering, and SVG trend-line rendering.
+
 ## 0.6.1
 
 - Fixed DBGS Star Collection syncing by reading the current `collection.actual` tracker field; levels are capped to the current in-game maximum of 255.

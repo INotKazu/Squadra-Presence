@@ -16,7 +16,7 @@ describe("app backup", () => {
     expect(parsed.settings.publicId).toBe("");
     expect(parsed.savedBuilds).toEqual([]);
     expect(parsed.journals).toEqual({});
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(parsed.kazumaPickOverrides).toEqual({});
     expect(parsed.starRewardOverrides).toEqual({});
   });
@@ -30,7 +30,7 @@ describe("app backup", () => {
       rankGainHistory: {},
       journals: {},
     }));
-    expect(parsed.version).toBe(2);
+    expect(parsed.version).toBe(3);
     expect(parsed.kazumaPickOverrides).toEqual({});
   });
 

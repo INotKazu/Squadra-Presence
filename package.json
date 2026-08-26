@@ -1,7 +1,8 @@
 {
   "name": "squadra-presence",
   "private": true,
-  "version": "0.6.1",
+  "version": "0.6.2",
+  "license": "SEE LICENSE IN LICENSE",
   "repository": "https://github.com/INotKazu/Squadra-Presence",
   "type": "module",
   "scripts": {

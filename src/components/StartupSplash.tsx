@@ -5,8 +5,8 @@ interface StartupSplashProps {
   onComplete: () => void;
 }
 
-const STARTUP_FADE_AT_MS = 2_650;
-const STARTUP_COMPLETE_AT_MS = 3_200;
+const STARTUP_FADE_AT_MS = 3_450;
+const STARTUP_COMPLETE_AT_MS = 4_000;
 
 function playKazuCorpChime(): void {
   try {

@@ -1,0 +1,79 @@
+Squadra Presence Personal-Use License
+Version 1.0 — August 26, 2026
+
+Copyright (c) 2026 Kazuma / KazuCorp. All rights reserved.
+
+This software, including its original source code, compiled application,
+documentation, interface design, original audio, and original project assets
+(collectively, the "Software"), is made available under the following terms.
+
+1. Personal-use permission
+
+Kazuma / KazuCorp grants an individual a limited, revocable, non-exclusive,
+non-transferable permission to:
+
+* download and run an unmodified official compiled release of Squadra Presence
+  for personal, non-commercial use; and
+* view the publicly available source code for evaluation, security review, and
+  learning.
+
+An "official release" is a release published by INotKazu through the official
+Squadra Presence repository at:
+
+https://github.com/INotKazu/Squadra-Presence
+
+2. No redistribution or derivative works
+
+Except with prior written permission from Kazuma / KazuCorp, you may not:
+
+* copy, publish, mirror, sell, sublicense, redistribute, or otherwise make the
+  Software or a modified version available to another person;
+* modify the Software or create, publish, or distribute a derivative work based
+  on it;
+* repackage an official installer or updater artifact;
+* use the Software, in whole or in part, in another application, service,
+  repository, product, or commercial offering;
+* remove or alter copyright, attribution, origin, or legal notices;
+* represent a copy, fork, modification, or derivative work as an official
+  Squadra Presence or KazuCorp release;
+* reuse the project's Discord application identity, Rich Presence asset
+  namespace, official update feed, update-signing identity, or release channel;
+* bypass, disable, or interfere with signature verification, origin checks, or
+  other update safeguards; or
+* reverse engineer a compiled release except to the limited extent that
+  applicable law expressly permits despite this restriction.
+
+Personal archival copies of an official installer are permitted, provided they
+remain unmodified and are not publicly redistributed.
+
+3. Branding
+
+No permission to use the Squadra Presence, KazuCorp, KazuCorp Systems, Kazuma's
+Picks, project logo, application icon, trade dress, or other project branding is
+granted by this license. Permitted and prohibited brand uses are described in
+BRAND_POLICY.md.
+
+4. Third-party materials
+
+DRAGON BALL GEKISHIN SQUADRA and related character names, artwork, trademarks,
+and other materials belong to their respective owners. Discord and DBGS Builds
+also retain all rights in their respective names, services, and materials.
+
+Those third-party materials are not owned by Kazuma / KazuCorp and are not
+licensed under this document. Nothing in this license grants rights that Kazuma
+/ KazuCorp does not own. See THIRD_PARTY_NOTICES.md for additional attribution.
+
+5. No warranty
+
+THE SOFTWARE IS PROVIDED "AS IS" AND WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR
+PURPOSE, TITLE, AND NON-INFRINGEMENT. TO THE MAXIMUM EXTENT PERMITTED BY LAW,
+KAZUMA / KAZUCORP WILL NOT BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY
+ARISING FROM THE SOFTWARE OR ITS USE.
+
+6. Termination and reservation of rights
+
+The permission in Section 1 ends automatically if you violate these terms. On
+termination, you must stop using and delete unauthorized copies under your
+control. All rights not expressly granted are reserved by Kazuma / KazuCorp.
+

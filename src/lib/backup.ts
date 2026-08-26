@@ -8,7 +8,7 @@ import type { AppSettings, CuratedBuild, JournalStore, RoleGainHistory, SavedBui
 
 interface AppBackup {
   format: "squadra-presence-backup";
-  version: 2;
+  version: 3;
   exportedAt: string;
   settings: AppSettings;
   savedBuilds: SavedBuild[];
@@ -21,7 +21,7 @@ interface AppBackup {
 export function createAppBackup(settings: AppSettings): AppBackup {
   return {
     format: "squadra-presence-backup",
-    version: 2,
+    version: 3,
     exportedAt: new Date().toISOString(),
     settings: sanitizeSettings(settings),
     savedBuilds: loadSavedBuilds(),
@@ -45,7 +45,7 @@ export function parseAppBackup(text: string): AppBackup {
   }
   if (!value || typeof value !== "object") throw new Error("That file is not a Squadra Presence backup.");
   const candidate = value as Partial<Omit<AppBackup, "version">> & { version?: number };
-  if (candidate.format !== "squadra-presence-backup" || (candidate.version !== 1 && candidate.version !== 2)) {
+  if (candidate.format !== "squadra-presence-backup" || ![1, 2, 3].includes(candidate.version ?? 0)) {
     throw new Error("That backup format is not supported by this version.");
   }
   const savedBuilds = Array.isArray(candidate.savedBuilds) ? candidate.savedBuilds.filter(isSavedBuild) : [];
@@ -54,14 +54,14 @@ export function parseAppBackup(text: string): AppBackup {
   }
   return {
     format: "squadra-presence-backup",
-    version: 2,
+    version: 3,
     exportedAt: typeof candidate.exportedAt === "string" ? candidate.exportedAt : new Date().toISOString(),
     settings: sanitizeSettings(candidate.settings),
     savedBuilds,
     rankGainHistory: sanitizeRoleGainHistory(candidate.rankGainHistory),
     journals: sanitizeJournalStore(candidate.journals),
-    kazumaPickOverrides: candidate.version === 2 ? sanitizeKazumaPickOverrides(candidate.kazumaPickOverrides) : {},
-    starRewardOverrides: candidate.version === 2 ? sanitizeStarRewardOverrides(candidate.starRewardOverrides) : {},
+    kazumaPickOverrides: candidate.version === 2 || candidate.version === 3 ? sanitizeKazumaPickOverrides(candidate.kazumaPickOverrides) : {},
+    starRewardOverrides: candidate.version === 2 || candidate.version === 3 ? sanitizeStarRewardOverrides(candidate.starRewardOverrides) : {},
   };
 }
 

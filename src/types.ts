@@ -148,11 +148,13 @@ export interface RoleGainHistory {
 
 export interface MatchJournalEntry extends MatchSnapshot {
   id: string;
+  seasonId: string;
   role: RoleId;
   observedAt: number;
 }
 
 export interface RankJournalEntry {
+  seasonId: string;
   observedAt: number;
   matchPlayedAt: string | null;
   scores: Record<RoleId, number>;

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { DEMO_TRACKER_RESPONSE } from "./fixture";
 import { EMPTY_PLAYER_JOURNAL, mergePlayerJournal, roleRankObservations, sanitizePlayerJournal } from "./journal";
 import { normalizeTrackerResponse } from "./tracker";
+import { CURRENT_SEASON_ID } from "./seasons";
 
 describe("player journal", () => {
   it("deduplicates matches and rank observations", () => {
@@ -12,6 +13,8 @@ describe("player journal", () => {
     expect(second.matches).toHaveLength(1);
     expect(second.ranks).toHaveLength(1);
     expect(second.matches[0]?.role).toBe("damage");
+    expect(second.matches[0]?.seasonId).toBe(CURRENT_SEASON_ID);
+    expect(second.ranks[0]?.seasonId).toBe(CURRENT_SEASON_ID);
   });
 
   it("records a new rank snapshot when a role score changes", () => {
@@ -54,6 +57,7 @@ describe("player journal", () => {
     });
     expect(repaired.matches[0]?.characterName).toBe("Frieza (Fourth Form)");
     expect(repaired.matches[0]?.role).toBe("technical");
+    expect(repaired.matches[0]?.seasonId).toBe(CURRENT_SEASON_ID);
   });
 
   it("enriches an existing saved match when the tracker later reports its MVP trophy", () => {

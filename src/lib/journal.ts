@@ -1,4 +1,5 @@
 import { getCharacter } from "./characters";
+import { CURRENT_SEASON_ID, seasonIdForTimestamp } from "./seasons";
 import type {
   JournalStore,
   MatchJournalEntry,
@@ -14,6 +15,17 @@ const MAX_MATCHES = 50;
 const MAX_RANK_SNAPSHOTS = 100;
 
 export const EMPTY_PLAYER_JOURNAL: PlayerJournal = { matches: [], ranks: [] };
+
+function trimPerSeason<T>(entries: T[], seasonId: (entry: T) => string, limit: number): T[] {
+  const counts = new Map<string, number>();
+  return entries.filter((entry) => {
+    const id = seasonId(entry);
+    const count = counts.get(id) ?? 0;
+    if (count >= limit) return false;
+    counts.set(id, count + 1);
+    return true;
+  });
+}
 
 function matchId(match: MatchSnapshot): string {
   return [match.playedAt, match.characterRankingId, match.outcome, match.gameType, match.teamFormat].join("|");
@@ -45,6 +57,7 @@ function sanitizeMatchJournalEntry(value: unknown): MatchJournalEntry | null {
   if (!valid) return null;
   return {
     ...(candidate as MatchJournalEntry),
+    seasonId: seasonIdForTimestamp(candidate.playedAt || candidate.observedAt),
     isMvp: typeof candidate.isMvp === "boolean" ? candidate.isMvp : null,
     rpChange: isFiniteNullable(candidate.rpChange) ? candidate.rpChange : null,
   };
@@ -62,27 +75,38 @@ function roleStringRecord(value: unknown): value is Record<RoleId, string> {
   return [candidate.damage, candidate.tank, candidate.technical].every((entry) => typeof entry === "string");
 }
 
-function isRankJournalEntry(value: unknown): value is RankJournalEntry {
-  if (!value || typeof value !== "object") return false;
+function sanitizeRankJournalEntry(value: unknown): RankJournalEntry | null {
+  if (!value || typeof value !== "object") return null;
   const candidate = value as Partial<RankJournalEntry>;
-  return typeof candidate.observedAt === "number"
+  const valid = typeof candidate.observedAt === "number"
     && (candidate.matchPlayedAt === null || typeof candidate.matchPlayedAt === "string")
     && roleNumberRecord(candidate.scores)
     && roleStringRecord(candidate.codes);
+  if (!valid) return null;
+  return {
+    ...(candidate as RankJournalEntry),
+    seasonId: seasonIdForTimestamp(candidate.observedAt),
+  };
 }
 
 export function sanitizePlayerJournal(value: unknown): PlayerJournal {
   if (!value || typeof value !== "object") return EMPTY_PLAYER_JOURNAL;
   const candidate = value as Partial<PlayerJournal>;
   const matches = Array.isArray(candidate.matches)
-    ? candidate.matches.map(sanitizeMatchJournalEntry).filter((match): match is MatchJournalEntry => Boolean(match)).slice(0, MAX_MATCHES).map((match) => {
-      const fighter = getCharacter(match.characterRankingId, match.characterName);
-      return { ...match, characterName: fighter.name, role: fighter.defaultRole };
-    })
+    ? trimPerSeason(
+      candidate.matches.map(sanitizeMatchJournalEntry).filter((match): match is MatchJournalEntry => Boolean(match)).map((match) => {
+        const fighter = getCharacter(match.characterRankingId, match.characterName);
+        return { ...match, characterName: fighter.name, role: fighter.defaultRole };
+      }),
+      (match) => match.seasonId,
+      MAX_MATCHES,
+    )
     : [];
   return {
     matches,
-    ranks: Array.isArray(candidate.ranks) ? candidate.ranks.filter(isRankJournalEntry).slice(0, MAX_RANK_SNAPSHOTS) : [],
+    ranks: Array.isArray(candidate.ranks)
+      ? trimPerSeason(candidate.ranks.map(sanitizeRankJournalEntry).filter((rank): rank is RankJournalEntry => Boolean(rank)), (rank) => rank.seasonId, MAX_RANK_SNAPSHOTS)
+      : [],
   };
 }
 
@@ -121,6 +145,7 @@ export function roleRankObservations(ranks: RankJournalEntry[], role: RoleId): R
 
 function rankEntry(profile: PlayerProfile, observedAt: number): RankJournalEntry {
   return {
+    seasonId: CURRENT_SEASON_ID,
     observedAt,
     matchPlayedAt: profile.latestMatch?.playedAt || null,
     scores: {
@@ -137,7 +162,8 @@ function rankEntry(profile: PlayerProfile, observedAt: number): RankJournalEntry
 }
 
 function sameRankObservation(left: RankJournalEntry, right: RankJournalEntry): boolean {
-  return left.matchPlayedAt === right.matchPlayedAt
+  return left.seasonId === right.seasonId
+    && left.matchPlayedAt === right.matchPlayedAt
     && (["damage", "tank", "technical"] as RoleId[]).every((role) => left.scores[role] === right.scores[role]);
 }
 
@@ -146,6 +172,7 @@ export function mergePlayerJournal(current: PlayerJournal, profile: PlayerProfil
   const incoming = sourceMatches.map<MatchJournalEntry>((match) => ({
       ...match,
       id: matchId(match),
+      seasonId: seasonIdForTimestamp(match.playedAt),
       role: getCharacter(match.characterRankingId, match.characterName).defaultRole,
       observedAt,
     }));
@@ -167,13 +194,16 @@ export function mergePlayerJournal(current: PlayerJournal, profile: PlayerProfil
       observedAt: existing.observedAt,
     };
   });
-  const matches = [...incomingById.values(), ...repairedExisting]
-    .sort((left, right) => (Date.parse(right.playedAt) || right.observedAt) - (Date.parse(left.playedAt) || left.observedAt))
-    .slice(0, MAX_MATCHES);
+  const matches = trimPerSeason(
+    [...incomingById.values(), ...repairedExisting]
+      .sort((left, right) => (Date.parse(right.playedAt) || right.observedAt) - (Date.parse(left.playedAt) || left.observedAt)),
+    (match) => match.seasonId,
+    MAX_MATCHES,
+  );
   const nextRank = rankEntry(profile, observedAt);
   const ranks = current.ranks[0] && sameRankObservation(current.ranks[0], nextRank)
     ? current.ranks
-    : [nextRank, ...current.ranks].slice(0, MAX_RANK_SNAPSHOTS);
+    : trimPerSeason([nextRank, ...current.ranks], (rank) => rank.seasonId, MAX_RANK_SNAPSHOTS);
   return { matches, ranks };
 }
 

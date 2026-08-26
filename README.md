@@ -34,10 +34,12 @@ The interface is styled after the dark Squadra battle-card mockup: a fighter das
 - On-demand expanded guides with situational choices, strategy, skill order, teammates, and matchup references cached for seven days
 - A Skills & Passives tab that loads the selected fighter's current reference text and caches it locally for seven days
 - A local 50-match battle journal with role filters, performance summaries, and RP trend charts
+- Season-aware battle journals that preserve completed seasons, start each new ranked season cleanly, and provide a cross-season Career match view
+- Neutral yellow Void results that do not count as losses or distort completed-match performance averages
 - Tracker-linked Star Collection level, Total Votes Received, Zeni, and overall player rank with the complete current Level 1–255 reward roadmap and four Hero Unlock pools
 - Explicit MVP badges and a clickable match-detail drawer; MVP is never inferred from combat stats
 - Locally editable Kazuma's Picks with bundled-default reset and backup coverage
-- A slightly extended KazuCorp Systems cold-launch sequence with an original synthesized chime, skipped during hidden startup and tray restore
+- A four-second KazuCorp Systems cold-launch sequence with an original synthesized chime, skipped during hidden startup and tray restore
 - Signed one-click updates from `INotKazu/Squadra-Presence` GitHub Releases, with release notes, progress, later, and skip controls
 - JSON backup and restore for settings, custom builds, Helper choices, learned rank pace, and local history
 - Browser preview mode with representative fixture data
@@ -97,6 +99,16 @@ For the first update-enabled v0.6 build, use the signed-release workflow below i
 
 The first v0.6 installation is manual. Once it is installed with the permanent updater public key embedded, future signed GitHub releases can appear as a green banner and install from inside the app.
 
+For normal releases after the one-time setup is complete, open PowerShell in the finished source folder and run:
+
+```powershell
+.\Release-All.ps1
+```
+
+This single command installs dependencies, runs the tests, builds and signs the Windows installer, prepares `latest.json`, pushes the clean source to `main`, and creates or refreshes the matching GitHub release. It prompts for the updater-key password locally and never uploads the private key or password.
+
+The individual setup and release stages are documented below for recovery and troubleshooting.
+
 1. Create a public GitHub repository named `INotKazu/Squadra-Presence`.
 2. Run `npm install`, then run this once:
 
@@ -117,7 +129,7 @@ The first v0.6 installation is manual. Once it is installed with the permanent u
    .\Prepare-GitHub-Release.ps1
    ```
 
-6. Create the matching GitHub release tag, such as `v0.6.1`, and upload the prepared NSIS installer, its `.sig`, and `latest.json` from `release-output`.
+6. Create the matching GitHub release tag, such as `v0.6.2`, and upload the prepared NSIS installer, its `.sig`, and `latest.json` from `release-output`.
 
 To create/update the public repository and upload all three signed assets without using the GitHub website manually, install [GitHub CLI](https://cli.github.com/), run `gh auth login` once as **INotKazu**, then run:
 
@@ -174,19 +186,21 @@ Please keep the polling interval conservative and obtain permission from the DBG
 
 ## History and backups
 
-- Open **History** from the dashboard header to view tracker matches saved on this PC, role-filtered summaries, and Damage/Tank/Technical RP trends.
-- Each successful tracker sync merges up to the latest 20 completed matches without duplicating existing journal entries and enriches previously saved rows when DBGS later supplies MVP or RP details. The local journal retains up to 50 matches and 100 RP observations per public UUID.
+- Open **History** from the dashboard header to view tracker matches saved on this PC, season and role filters, and Damage/Tank/Technical RP trends.
+- Each successful tracker sync merges up to the latest 20 completed matches without duplicating existing journal entries and enriches previously saved rows when DBGS later supplies MVP or RP details. The local journal retains up to 50 matches and 100 RP observations per season and public UUID.
 - Each role trend counts only that role's score changes; an untouched role correctly says there is no RP movement yet.
+- Each season keeps its own 50-match and 100-observation allowance. A season update adds the official boundary to the app's season catalog, preserving the old journal while starting the new RP graph cleanly. **Career** combines match summaries but deliberately does not connect RP scores across season resets.
+- Void/cancelled results remain visible in the archive as yellow neutral rows but are excluded from win rate, performance averages, MVP totals, and most-played calculations.
 - Click a completed match to open its full local detail drawer. MVP and per-match RP are shown only when explicitly supplied by the public tracker.
 - Open **Settings → Backup and restore** to export or restore settings, custom builds, Helper choices, learned RP gain samples, and local journals.
-- Backups also include local Kazuma's Pick edits and Star reward notes. Restoring a backup replaces those local collections. A backup contains the public UUID, so it should not be posted publicly.
+- Backup format v3 includes every season journal alongside local Kazuma's Pick edits and Star reward notes; v1 and v2 backups remain importable. Restoring a backup replaces those local collections. A backup contains the public UUID, so it should not be posted publicly.
 
 ## Star Collection and player profile
 
 - Open **Star** from the dashboard header to view the tracker's Star Collection level, Total Votes Received, Zeni, and overall Player Rank.
 - When the public tracker exposes the level, the app updates it during normal sync. Manual correction remains available as a fallback.
 - The roadmap contains every supplied current in-game reward from Level 1 through the fixed Level 255 cap, plus expandable Tier IV, III, II, and I Hero Unlock pools covering the 36 supplied unlockable fighters.
-- Any reward row can be edited locally and reset later; those notes are included in backup format v2.
+- Any reward row can be edited locally and reset later; those notes are included in backup format v3.
 
 ## KazuCorp startup sequence
 
@@ -245,4 +259,12 @@ The TypeScript/Vite production build and automated mapping tests can run on any 
 
 ## Legal
 
-This is an unofficial fan project and is not affiliated with Bandai Namco Entertainment, Bird Studio/Shueisha, Toei Animation, Discord, or DBGS Builds. Do not represent it as an official game client.
+Squadra Presence is **source-visible proprietary software**, not an open-source project. The official compiled app may be used personally and non-commercially, but the source or application may not be repackaged, modified, redistributed, or presented as another official release without prior written permission.
+
+- Read the [Squadra Presence Personal-Use License](LICENSE).
+- Read the [Squadra Presence and KazuCorp Brand Policy](BRAND_POLICY.md).
+- Read the [third-party notices](THIRD_PARTY_NOTICES.md).
+
+Official releases come only from [`INotKazu/Squadra-Presence`](https://github.com/INotKazu/Squadra-Presence) and in-app updates must pass the embedded updater-signature check.
+
+This is an unofficial fan project and is not affiliated with or endorsed by Bandai Namco Entertainment, Bird Studio/Shueisha, Toei Animation, Discord, or DBGS Builds. Dragon Ball and other third-party names, artwork, characters, and trademarks remain the property of their respective owners. Do not represent this project as an official game client.
