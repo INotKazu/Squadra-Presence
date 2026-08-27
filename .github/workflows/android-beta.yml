@@ -62,6 +62,20 @@ jobs:
       - name: Install locked dependencies
         run: npm ci
 
+      - name: Normalize bundle icons for Android
+        shell: bash
+        run: |
+          if ! command -v convert >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+          fi
+
+          for icon in src-tauri/icons/*.png; do
+            rgba_icon="${icon%.png}.rgba.png"
+            convert "$icon" -alpha on "PNG32:$rgba_icon"
+            mv "$rgba_icon" "$icon"
+          done
+
       - name: Run regression tests
         run: npm test
 
