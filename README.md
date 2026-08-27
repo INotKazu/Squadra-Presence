@@ -2,6 +2,8 @@
 
 Squadra Presence is an unofficial, local-first Windows companion for **DRAGON BALL GEKISHIN SQUADRA**. It turns the latest public DBGS Builds tracker data—or a manual fighter/rank choice—into a polished Discord Rich Presence.
 
+The repository also contains the Android-first **Squadra Companion** mobile port. It keeps the tracker, Journal, seasons, rank graphs, Star Collection, builds, cards, Helpers, abilities, Kazuma's Picks, intro, and portable backups while intentionally excluding Discord Rich Presence and Windows-only automation. See [MOBILE.md](MOBILE.md) for setup and beta build instructions.
+
 The interface is styled after the dark Squadra battle-card mockup: a fighter dashboard on the left, a live Discord preview, fighter-driven role/rank mapping, all 16 uploaded rank badges, role-filtered Helpers, recent match stats, a rank-progress display, a personal build library, and safe process-aware automation.
 
 ## What is implemented
@@ -160,6 +162,16 @@ npm run dev
 ```
 
 This mode uses demo tracker data and simulates Discord status. Native process detection and Discord IPC require the Tauri desktop runtime.
+
+## Android companion beta
+
+After the one-time Android Studio setup in [MOBILE.md](MOBILE.md), create an installable Android beta with:
+
+```powershell
+.\Build-Android-Beta.ps1
+```
+
+The mobile build uses a separate `Squadra Companion` identity and compiles out Discord, process detection, tray, autostart, and the desktop updater. A desktop backup restores the existing local journal and customizations on the phone; live tracker sync then continues while the mobile app is open.
 
 ## Tracker behavior
 

@@ -93,7 +93,7 @@ export function HistoryWorkspace({ journal, nickname, onClose }: HistoryWorkspac
     <div className="history-overlay" role="dialog" aria-modal="true" aria-label="Match and rank history">
       <div className="history-workspace">
         <header className="history-header">
-          <div><span className="eyebrow">Local performance journal</span><h1>{nickname}'s battle history</h1><p>{seasonFilter === CAREER_FILTER ? "Career match totals across every saved season." : `${seasonLabel(seasonFilter)} journal`} • Saved only on this PC and included in app backups.</p></div>
+          <div><span className="eyebrow">Local performance journal</span><h1>{nickname}'s battle history</h1><p>{seasonFilter === CAREER_FILTER ? "Career match totals across every saved season." : `${seasonLabel(seasonFilter)} journal`} • Saved locally on this device and included in app backups.</p></div>
           <button type="button" className="builds-close" onClick={onClose} aria-label="Close history"><X /></button>
         </header>
 

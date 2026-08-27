@@ -1,19 +1,29 @@
-mod discord;
-mod app_updates;
-mod process;
 mod tracker;
 
-use discord::{clear_discord_presence, discord_status, set_discord_presence, DiscordService};
+use serde::Serialize;
+use tracker::{fetch_build_guide, fetch_hero_abilities, fetch_tracker_profile};
+
+#[cfg(desktop)]
+mod app_updates;
+#[cfg(desktop)]
+mod discord;
+#[cfg(desktop)]
+mod process;
+
+#[cfg(desktop)]
 use app_updates::{fetch_update, install_update};
+#[cfg(desktop)]
+use discord::{clear_discord_presence, discord_status, set_discord_presence, DiscordService};
+#[cfg(desktop)]
 use process::detect_game_process;
+#[cfg(desktop)]
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
     Manager, WindowEvent,
 };
+#[cfg(desktop)]
 use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
-use tracker::{fetch_build_guide, fetch_hero_abilities, fetch_tracker_profile};
-use serde::Serialize;
 
 #[derive(Serialize)]
 struct LaunchContext {
@@ -23,10 +33,12 @@ struct LaunchContext {
 #[tauri::command]
 fn launch_context() -> LaunchContext {
     LaunchContext {
-        background: std::env::args().any(|argument| argument == "--background"),
+        background: cfg!(desktop)
+            && std::env::args().any(|argument| argument == "--background"),
     }
 }
 
+#[cfg(desktop)]
 fn show_main_window(app: &tauri::AppHandle) {
     if let Some(window) = app.get_webview_window("main") {
         let _ = window.show();
@@ -36,6 +48,7 @@ fn show_main_window(app: &tauri::AppHandle) {
 }
 
 #[tauri::command]
+#[cfg(desktop)]
 fn set_launch_at_login(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
     let manager = app.autolaunch();
     let is_enabled = manager.is_enabled().map_err(|error| error.to_string())?;
@@ -47,8 +60,8 @@ fn set_launch_at_login(app: tauri::AppHandle, enabled: bool) -> Result<(), Strin
     Ok(())
 }
 
-#[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
+#[cfg(desktop)]
+fn run_app() {
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             show_main_window(app);
@@ -114,4 +127,22 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running Squadra Presence");
+}
+
+#[cfg(mobile)]
+fn run_app() {
+    tauri::Builder::default()
+        .invoke_handler(tauri::generate_handler![
+            fetch_tracker_profile,
+            fetch_hero_abilities,
+            fetch_build_guide,
+            launch_context
+        ])
+        .run(tauri::generate_context!())
+        .expect("error while running Squadra Companion");
+}
+
+#[cfg_attr(mobile, tauri::mobile_entry_point)]
+pub fn run() {
+    run_app();
 }
