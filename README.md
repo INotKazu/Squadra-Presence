@@ -165,7 +165,7 @@ This mode uses demo tracker data and simulates Discord status. Native process de
 
 ## Android companion beta
 
-After the one-time Android Studio setup in [MOBILE.md](MOBILE.md), create an installable Android beta with:
+The `feature/mobile-companion` branch automatically builds an installable debug APK in GitHub Actions without publishing it as a release. For an optional local build after the one-time Android Studio setup in [MOBILE.md](MOBILE.md), run:
 
 ```powershell
 .\Build-Android-Beta.ps1
