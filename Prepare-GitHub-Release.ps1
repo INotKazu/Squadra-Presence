@@ -30,11 +30,25 @@ if (-not (Test-Path $signaturePath)) {
 
 $releaseFolder = Join-Path $PSScriptRoot "release-output\v$Version"
 New-Item -ItemType Directory -Path $releaseFolder -Force | Out-Null
-Copy-Item $installer.FullName (Join-Path $releaseFolder $installer.Name) -Force
-Copy-Item $signaturePath (Join-Path $releaseFolder "$($installer.Name).sig") -Force
+
+# GitHub normalizes spaces in uploaded asset names to periods. Prepare the
+# files with that exact name up front so latest.json always points at the
+# asset GitHub will actually store.
+$preparedInstallerName = $installer.Name.Replace(" ", ".")
+$preparedInstallerPath = Join-Path $releaseFolder $preparedInstallerName
+$preparedSignaturePath = "$preparedInstallerPath.sig"
+
+# This folder contains generated release artifacts only. Clear any older
+# same-version copies so Publish-GitHub.ps1 cannot select a stale space-named
+# installer from an earlier preparation attempt.
+Get-ChildItem -Path $releaseFolder -Filter "*${Version}*setup.exe*" -File -ErrorAction SilentlyContinue |
+    Remove-Item -Force
+
+Copy-Item $installer.FullName $preparedInstallerPath -Force
+Copy-Item $signaturePath $preparedSignaturePath -Force
 
 $signature = (Get-Content -Raw $signaturePath).Trim()
-$downloadUrl = "https://github.com/INotKazu/Squadra-Presence/releases/download/v$Version/$($installer.Name)"
+$downloadUrl = "https://github.com/INotKazu/Squadra-Presence/releases/download/v$Version/$preparedInstallerName"
 $manifest = [ordered]@{
     version = $Version
     notes = "See the GitHub release notes for Squadra Presence v$Version."
@@ -54,4 +68,3 @@ Write-Host "`nGitHub release files are ready:" -ForegroundColor Green
 Write-Host $releaseFolder
 Write-Host "Create release tag v$Version in INotKazu/Squadra-Presence and upload all three files." -ForegroundColor Cyan
 Write-Host "The installed app will then discover this release through latest.json." -ForegroundColor Cyan
-
