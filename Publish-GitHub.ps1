@@ -75,8 +75,17 @@ if ($stagedPaths.Count -gt 0) {
 }
 
 $repoExists = $false
-$repoJson = [string](& gh repo view $Repository --json nameWithOwner,visibility 2>$null)
-if ($LASTEXITCODE -eq 0) {
+$previousErrorActionPreference = $ErrorActionPreference
+try {
+    # Windows PowerShell 5 turns an expected native "not found" response into
+    # a terminating NativeCommandError when ErrorActionPreference is Stop.
+    $ErrorActionPreference = "SilentlyContinue"
+    $repoJson = [string](& gh repo view $Repository --json nameWithOwner,visibility 2>$null)
+    $repoProbeExitCode = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
+if ($repoProbeExitCode -eq 0) {
     $repoExists = $true
     $repoInfo = $repoJson | ConvertFrom-Json
     if ([string]$repoInfo.visibility -ne "PUBLIC") {
@@ -89,7 +98,13 @@ if (-not $repoExists) {
     Invoke-Checked gh repo create $Repository --public --source . --remote origin --description "Unofficial local-first Discord Rich Presence and companion for DRAGON BALL GEKISHIN SQUADRA."
 }
 
-$remoteOutput = & git remote get-url origin 2>$null
+$previousErrorActionPreference = $ErrorActionPreference
+try {
+    $ErrorActionPreference = "SilentlyContinue"
+    $remoteOutput = & git remote get-url origin 2>$null
+} finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
 $remoteUrl = if ($null -eq $remoteOutput) { "" } else { ([string]$remoteOutput).Trim() }
 if (-not $remoteUrl) {
     Invoke-Checked git remote add origin "https://github.com/$Repository.git"
@@ -135,8 +150,16 @@ See CHANGELOG.md for the complete feature and fix list.
 This is an unofficial KazuCorp fan project and is not affiliated with Bandai Namco Entertainment.
 "@
 
-& gh release view $tag --repo $Repository *> $null
-if ($LASTEXITCODE -eq 0) {
+$previousErrorActionPreference = $ErrorActionPreference
+try {
+    # A missing release is the normal first-publish state, not a failure.
+    $ErrorActionPreference = "SilentlyContinue"
+    & gh release view $tag --repo $Repository *> $null
+    $releaseProbeExitCode = $LASTEXITCODE
+} finally {
+    $ErrorActionPreference = $previousErrorActionPreference
+}
+if ($releaseProbeExitCode -eq 0) {
     Write-Host "Updating the existing $tag release assets..." -ForegroundColor Cyan
     Invoke-Checked gh release upload $tag $installer.FullName $signature.FullName $manifest.FullName --repo $Repository --clobber
     Invoke-Checked gh release edit $tag --repo $Repository --title "Squadra Presence v$Version" --notes $releaseNotes --latest
