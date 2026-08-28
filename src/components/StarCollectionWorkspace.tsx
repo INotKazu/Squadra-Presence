@@ -17,6 +17,7 @@ interface StarCollectionWorkspaceProps {
   votes: number | null;
   zeni: number | null;
   playerRank: RankSnapshot | null;
+  mobileRuntime?: boolean;
   onLevelChange: (level: number) => void;
   onClose: () => void;
 }
@@ -36,11 +37,13 @@ export function StarCollectionWorkspace({
   votes,
   zeni,
   playerRank,
+  mobileRuntime = false,
   onLevelChange,
   onClose,
 }: StarCollectionWorkspaceProps) {
   const [filter, setFilter] = useState<RewardFilter>("upcoming");
   const [section, setSection] = useState<StarSection>("overview");
+  const [poolsExpanded, setPoolsExpanded] = useState(false);
   const [expandedTier, setExpandedTier] = useState<HeroUnlockTier | null>(null);
   const [overrides, setOverrides] = useState<StarRewardOverrides>(() => loadStarRewardOverrides());
   const [editingLevel, setEditingLevel] = useState<number | null>(null);
@@ -76,7 +79,10 @@ export function StarCollectionWorkspace({
   };
   const openSection = (nextSection: StarSection) => {
     setSection(nextSection);
-    if (nextSection !== "unlocks") setExpandedTier(null);
+    if (nextSection !== "unlocks") {
+      setPoolsExpanded(false);
+      setExpandedTier(null);
+    }
     if (nextSection === "unlocks") setFilter("unlocks");
     else if (nextSection === "roadmap" && filter === "unlocks") setFilter("upcoming");
   };
@@ -124,29 +130,47 @@ export function StarCollectionWorkspace({
           </button>
         </section>
 
-        <section className="stars-pools" aria-label="Hero unlock pools">
-          <div><small>Current roster</small><strong>Hero unlock pools</strong></div>
-          {HERO_TIERS.map((tier) => {
-            const expanded = expandedTier === tier;
-            const panelId = `stars-tier-${tier.toLowerCase()}-fighters`;
-            return (
-              <article key={tier} className={`stars-tier-card tier-${tier.toLowerCase()} ${expanded ? "expanded" : ""}`}>
-                <button
-                  type="button"
-                  className="stars-tier-row"
-                  aria-label={`${expanded ? "Hide" : "Show"} Tier ${tier} fighters`}
-                  aria-expanded={expanded}
-                  aria-controls={panelId}
-                  onClick={() => setExpandedTier(expanded ? null : tier)}
-                >
-                  <span>Tier {tier}</span>
-                  <b>{HERO_UNLOCK_POOLS[tier].length} fighters</b>
-                  <i aria-hidden="true"><ChevronDown /></i>
-                </button>
-                {expanded && <p id={panelId}>{HERO_UNLOCK_POOLS[tier].join(" • ")}</p>}
-              </article>
-            );
-          })}
+        <section className={`stars-pools ${poolsExpanded ? "expanded" : ""}`} aria-label="Hero unlock pools">
+          {mobileRuntime ? (
+            <button
+              type="button"
+              className="stars-pools-toggle"
+              aria-label={`${poolsExpanded ? "Hide" : "Show"} hero unlock tiers`}
+              aria-expanded={poolsExpanded}
+              aria-controls="stars-tier-list"
+              onClick={() => {
+                setPoolsExpanded((current) => !current);
+                if (poolsExpanded) setExpandedTier(null);
+              }}
+            >
+              <span><small>Current roster</small><strong>Hero unlock pools</strong></span>
+              <b>{HERO_TIERS.reduce((total, tier) => total + HERO_UNLOCK_POOLS[tier].length, 0)} heroes</b>
+              <i aria-hidden="true"><ChevronDown /></i>
+            </button>
+          ) : <div className="stars-pools-heading"><small>Current roster</small><strong>Hero unlock pools</strong></div>}
+          <div className="stars-tier-list" id="stars-tier-list">
+            {HERO_TIERS.map((tier) => {
+              const expanded = expandedTier === tier;
+              const panelId = `stars-tier-${tier.toLowerCase()}-fighters`;
+              return (
+                <article key={tier} className={`stars-tier-card tier-${tier.toLowerCase()} ${expanded ? "expanded" : ""}`}>
+                  <button
+                    type="button"
+                    className="stars-tier-row"
+                    aria-label={`${expanded ? "Hide" : "Show"} Tier ${tier} fighters`}
+                    aria-expanded={expanded}
+                    aria-controls={panelId}
+                    onClick={() => setExpandedTier(expanded ? null : tier)}
+                  >
+                    <span>Tier {tier}</span>
+                    <b>{HERO_UNLOCK_POOLS[tier].length} fighters</b>
+                    <i aria-hidden="true"><ChevronDown /></i>
+                  </button>
+                  {expanded && <p id={panelId}>{HERO_UNLOCK_POOLS[tier].join(" • ")}</p>}
+                </article>
+              );
+            })}
+          </div>
         </section>
 
         <div className="stars-filter" role="tablist">

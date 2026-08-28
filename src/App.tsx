@@ -857,6 +857,7 @@ function App() {
           votes={profile?.votes ?? null}
           zeni={profile?.zeni ?? null}
           playerRank={profile?.playerRank ?? null}
+          mobileRuntime={mobileRuntime}
           onLevelChange={(level) => setSettings((current) => ({ ...current, starCollectionLevel: level, starCollectionMaxLevel: STAR_COLLECTION_MAX_LEVEL }))}
           onClose={() => setStarsOpen(false)}
         />

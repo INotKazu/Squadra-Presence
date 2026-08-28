@@ -11,6 +11,7 @@ describe("Star Collection workspace", () => {
         votes={259}
         zeni={6415}
         playerRank={{ code: "C", score: 3176, floor: 0, ceiling: 1, progress: 0 }}
+        mobileRuntime
         onLevelChange={() => undefined}
         onClose={() => undefined}
       />,
@@ -22,6 +23,8 @@ describe("Star Collection workspace", () => {
     expect(markup).toContain("Heroes");
     expect(markup).toContain("Browse every level from 1–255");
     expect(markup).toContain("36 heroes");
+    expect(markup).toContain('class="stars-pools-toggle"');
+    expect(markup).toContain('aria-label="Show hero unlock tiers"');
     expect(markup).toContain('<button type="button" class="stars-tier-row"');
     expect(markup).toContain('aria-label="Show Tier IV fighters"');
     expect(markup).toContain('aria-expanded="false"');

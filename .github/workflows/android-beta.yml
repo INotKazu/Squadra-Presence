@@ -10,6 +10,7 @@ on:
       - "package-lock.json"
       - "src/**"
       - "src-tauri/**"
+      - "scripts/patch-android-webview.mjs"
       - "index.html"
       - "vite.config.ts"
       - "tsconfig*.json"
@@ -84,6 +85,9 @@ jobs:
 
       - name: Initialize Android project
         run: npx --no-install tauri android init --ci
+
+      - name: Disable Android WebView edge bounce
+        run: node scripts/patch-android-webview.mjs
 
       - name: Generate Frieza and Goku launcher icons
         shell: bash
