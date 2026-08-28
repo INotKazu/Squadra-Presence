@@ -22,7 +22,13 @@ interface StarCollectionWorkspaceProps {
 }
 
 type RewardFilter = "all" | "upcoming" | "unlocks";
+type StarSection = "overview" | "roadmap" | "unlocks";
 const HERO_TIERS: HeroUnlockTier[] = ["IV", "III", "II", "I"];
+const FILTER_LABELS: Record<RewardFilter, string> = {
+  upcoming: "Upcoming",
+  all: "All levels",
+  unlocks: "Hero unlocks",
+};
 
 export function StarCollectionWorkspace({
   level,
@@ -34,6 +40,7 @@ export function StarCollectionWorkspace({
   onClose,
 }: StarCollectionWorkspaceProps) {
   const [filter, setFilter] = useState<RewardFilter>("upcoming");
+  const [section, setSection] = useState<StarSection>("overview");
   const [overrides, setOverrides] = useState<StarRewardOverrides>(() => loadStarRewardOverrides());
   const [editingLevel, setEditingLevel] = useState<number | null>(null);
   const [rewardDraft, setRewardDraft] = useState("");
@@ -66,14 +73,25 @@ export function StarCollectionWorkspace({
     setOverrides(next);
     setEditingLevel(null);
   };
+  const openSection = (nextSection: StarSection) => {
+    setSection(nextSection);
+    if (nextSection === "unlocks") setFilter("unlocks");
+    else if (nextSection === "roadmap" && filter === "unlocks") setFilter("upcoming");
+  };
 
   return (
     <div className="stars-overlay" role="dialog" aria-modal="true" aria-label="Star Collection roadmap">
-      <div className="stars-workspace">
+      <div className={`stars-workspace stars-view-${section}`}>
         <header className="stars-header">
           <div className="stars-title-lockup"><span><Star /></span><div><small>KazuCorp progression console</small><h1>Star Collection</h1><p>Tracker-synced progress and the complete current Level 1–255 reward roadmap.</p></div></div>
           <button type="button" className="builds-close" onClick={onClose} aria-label="Close Star Collection"><X /></button>
         </header>
+
+        <nav className="stars-mobile-tabs" aria-label="Star Collection sections">
+          <button type="button" className={section === "overview" ? "active" : ""} onClick={() => openSection("overview")}><Star />Overview</button>
+          <button type="button" className={section === "roadmap" ? "active" : ""} onClick={() => openSection("roadmap")}><Sparkles />Roadmap</button>
+          <button type="button" className={section === "unlocks" ? "active" : ""} onClick={() => openSection("unlocks")}><ShieldCheck />Heroes</button>
+        </nav>
 
         <section className="stars-hero">
           <div className="stars-level-orb"><small>Star level</small><strong>{safeLevel}</strong><span>of {STAR_COLLECTION_MAX_LEVEL}</span></div>
@@ -95,6 +113,15 @@ export function StarCollectionWorkspace({
           <article><ShieldCheck /><span><small>Overall player rank</small><strong>{playerRank ? `${playerRank.code} • ${playerRank.score.toLocaleString()} RP` : "Not reported"}</strong></span></article>
         </section>
 
+        <section className="stars-mobile-overview-actions" aria-label="Star Collection shortcuts">
+          <button type="button" onClick={() => openSection("roadmap")}>
+            <Sparkles /><span><strong>Reward Roadmap</strong><small>Browse every level from 1–255</small></span><b>View all</b>
+          </button>
+          <button type="button" onClick={() => openSection("unlocks")}>
+            <ShieldCheck /><span><strong>Hero Unlocks</strong><small>View all four pools and eligible levels</small></span><b>{HERO_TIERS.reduce((total, tier) => total + HERO_UNLOCK_POOLS[tier].length, 0)} heroes</b>
+          </button>
+        </section>
+
         <section className="stars-pools" aria-label="Hero unlock pools">
           <div><small>Current roster</small><strong>Hero unlock pools</strong></div>
           {HERO_TIERS.map((tier) => (
@@ -106,10 +133,14 @@ export function StarCollectionWorkspace({
         </section>
 
         <div className="stars-filter" role="tablist">
-          {(["upcoming", "all", "unlocks"] as RewardFilter[]).map((value) => <button type="button" key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{value}</button>)}
+          {(["upcoming", "all", "unlocks"] as RewardFilter[]).map((value) => <button type="button" key={value} className={filter === value ? "active" : ""} onClick={() => setFilter(value)}>{FILTER_LABELS[value]}</button>)}
         </div>
 
         <main className="stars-roadmap">
+          <div className="stars-roadmap-heading">
+            <span><small>{section === "unlocks" ? "Hero eligibility" : "Level rewards"}</small><strong>{section === "unlocks" ? "Unlock milestones" : FILTER_LABELS[filter]}</strong></span>
+            <b>{levels.length} levels</b>
+          </div>
           {levels.map((starLevel) => {
             const reward = rewardForStarLevel(starLevel, overrides);
             const completed = starLevel <= safeLevel;

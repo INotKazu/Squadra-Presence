@@ -1402,6 +1402,7 @@ button.build-card-tile { cursor: pointer; }
 .stars-title-lockup small { color: #9a824e; font-size: 7px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; }
 .stars-title-lockup h1 { margin: 4px 0 2px; font-size: 23px; }
 .stars-title-lockup p { margin: 0; color: #65707d; font-size: 8px; }
+.stars-mobile-tabs, .stars-mobile-overview-actions, .stars-roadmap-heading { display: none; }
 .stars-hero { display: grid; grid-template-columns: 130px minmax(280px,1fr) 215px; align-items: center; gap: 18px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
 .stars-level-orb { display: flex; width: 112px; height: 112px; align-items: center; justify-content: center; flex-direction: column; border: 1px solid rgba(241, 194, 77, .32); border-radius: 50%; background: radial-gradient(circle, rgba(234, 180, 46, .17), rgba(137, 91, 12, .04) 58%, transparent 59%); box-shadow: inset 0 0 0 7px rgba(232, 174, 40, .035), 0 0 35px rgba(225, 167, 31, .08); }
 .stars-level-orb small { color: #947942; font-size: 7px; font-weight: 900; text-transform: uppercase; }
@@ -1788,6 +1789,35 @@ button.build-card-tile { cursor: pointer; }
   .stars-title-lockup { gap: 9px; }
   .stars-title-lockup > span { width: 38px; height: 38px; border-radius: 10px; }
   .stars-title-lockup > span svg { width: 20px; }
+  .stars-mobile-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    padding: 7px 9px;
+    gap: 6px;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--line);
+    background: rgba(8, 11, 16, .94);
+  }
+  .stars-mobile-tabs button {
+    display: flex;
+    min-width: 0;
+    min-height: 43px;
+    padding: 0 7px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #737d88;
+    font-size: 9px;
+    font-weight: 900;
+    text-transform: uppercase;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: #10151c;
+  }
+  .stars-mobile-tabs button svg { width: 15px; flex: 0 0 auto; }
+  .stars-mobile-tabs button.active { color: #f1d27f; border-color: rgba(233, 187, 78, .3); background: rgba(193, 136, 25, .09); }
+  .stars-workspace.stars-view-overview { overflow-y: auto; }
   .stars-hero { grid-template-columns: 78px minmax(0, 1fr); gap: 10px; padding: 12px 10px; }
   .stars-level-orb { width: 74px; height: 74px; }
   .stars-level-orb strong { font-size: 25px; }
@@ -1796,12 +1826,74 @@ button.build-card-tile { cursor: pointer; }
   .stars-level-controls { grid-column: 1 / -1; }
   .stars-profile-stats { grid-template-columns: minmax(0, 1fr); padding: 9px; }
   .stars-profile-stats article { min-height: 48px; }
+  .stars-mobile-overview-actions { display: grid; padding: 0 9px 18px; gap: 7px; }
+  .stars-mobile-overview-actions button {
+    display: grid;
+    grid-template-columns: 35px minmax(0, 1fr) auto;
+    min-height: 67px;
+    padding: 10px 11px;
+    cursor: pointer;
+    align-items: center;
+    gap: 9px;
+    text-align: left;
+    border: 1px solid rgba(229, 182, 71, .17);
+    border-radius: 8px;
+    background: rgba(190, 131, 22, .04);
+  }
+  .stars-mobile-overview-actions button > svg { width: 22px; color: #e8bf5a; }
+  .stars-mobile-overview-actions button span { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+  .stars-mobile-overview-actions strong { color: #e7e1d3; font-size: 12px; }
+  .stars-mobile-overview-actions small { color: #737d88; font-size: 8px; line-height: 1.35; }
+  .stars-mobile-overview-actions b { color: #d9bd71; font-size: 8px; text-transform: uppercase; white-space: nowrap; }
+
+  .stars-view-overview .stars-pools,
+  .stars-view-overview .stars-filter,
+  .stars-view-overview .stars-roadmap,
+  .stars-view-roadmap .stars-hero,
+  .stars-view-roadmap .stars-profile-stats,
+  .stars-view-roadmap .stars-pools,
+  .stars-view-unlocks .stars-hero,
+  .stars-view-unlocks .stars-profile-stats,
+  .stars-view-unlocks .stars-filter,
+  .stars-view-roadmap .stars-mobile-overview-actions,
+  .stars-view-unlocks .stars-mobile-overview-actions { display: none; }
+
   .stars-pools { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 9px; }
   .stars-pools > div { grid-column: 1 / -1; }
   .stars-pools details p, .stars-pools details:nth-of-type(n+3) p { position: fixed; z-index: 180; top: 22%; right: 12px; left: 12px; width: auto; font-size: 9px; }
-  .stars-roadmap { padding: 8px 9px 16px; }
-  .stars-roadmap article { grid-template-columns: 68px minmax(0, 1fr); gap: 8px; padding: 8px; }
+  .stars-view-unlocks .stars-pools { grid-template-columns: minmax(0, 1fr); padding: 10px 9px; gap: 7px; flex: 0 0 auto; }
+  .stars-view-unlocks .stars-pools > div { padding: 3px 2px 5px; }
+  .stars-view-unlocks .stars-pools > div small { font-size: 8px; }
+  .stars-view-unlocks .stars-pools > div strong { font-size: 13px; }
+  .stars-view-unlocks .stars-pools summary { min-height: 54px; padding: 10px 12px; }
+  .stars-view-unlocks .stars-pools summary span { font-size: 11px; }
+  .stars-view-unlocks .stars-pools summary b { font-size: 8px; }
+  .stars-view-unlocks .stars-pools details p,
+  .stars-view-unlocks .stars-pools details:nth-of-type(n+3) p {
+    position: static;
+    width: auto;
+    margin: 0 8px 9px;
+    padding: 10px;
+    font-size: 10px;
+    line-height: 1.75;
+    box-shadow: none;
+  }
+  .stars-roadmap { padding: 8px 9px 28px; }
+  .stars-roadmap-heading { display: flex; min-height: 50px; padding: 7px 4px 9px; align-items: center; justify-content: space-between; gap: 10px; }
+  .stars-roadmap-heading span { display: flex; flex-direction: column; gap: 3px; }
+  .stars-roadmap-heading small { color: #81704c; font-size: 7px; font-weight: 900; text-transform: uppercase; }
+  .stars-roadmap-heading strong { color: #e9e1cd; font-size: 15px; }
+  .stars-roadmap-heading b { color: #8e8060; font-size: 8px; text-transform: uppercase; }
+  .stars-roadmap article { grid-template-columns: 76px minmax(0, 1fr); min-height: 76px; gap: 9px; padding: 10px; }
+  .stars-roadmap-level { grid-template-columns: 27px auto; }
+  .stars-roadmap-level svg { width: 19px; }
+  .stars-roadmap-level span { font-size: 7px; }
+  .stars-roadmap-level strong { font-size: 18px; }
+  .stars-roadmap-reward { gap: 5px; }
+  .stars-roadmap-reward small { font-size: 8px; line-height: 1.35; }
+  .stars-roadmap-reward strong { overflow: visible; font-size: 12px; line-height: 1.35; text-overflow: clip; white-space: normal; }
   .stars-roadmap-actions { grid-column: 1 / -1; justify-content: flex-end; }
+  .stars-roadmap-actions button { min-height: 36px; padding: 0 11px; font-size: 8px; }
   .stars-footer { display: none; }
 
   .notice-toast { right: 9px; bottom: calc(73px + env(safe-area-inset-bottom)); left: 9px; max-width: none; }
