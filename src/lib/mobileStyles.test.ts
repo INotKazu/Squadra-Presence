@@ -9,5 +9,6 @@ describe("mobile scroll containment", () => {
     expect(styles).toMatch(/html,\s*body,\s*#root \{[^}]*overflow: hidden;[^}]*overscroll-behavior: none;/);
     expect(styles).toContain(".app-shell--mobile * { scrollbar-width: none !important; }");
     expect(styles).toContain(".app-shell--mobile *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }");
+    expect(styles).toMatch(/\.stars-workspace\.stars-view-overview \{[^}]*overflow-y: auto;[^}]*overscroll-behavior: none;/);
   });
 });

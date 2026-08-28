@@ -1569,10 +1569,6 @@ button.build-card-tile { cursor: pointer; }
 .stars-roadmap-reward strong { overflow: hidden; color: #c7c1b3; font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .stars-roadmap article.has-reward .stars-roadmap-reward strong { color: #ead599; }
 .stars-roadmap-reward input { width: 100%; height: 31px; padding: 0 8px; color: #e9dfc4; border: 1px solid rgba(230, 185, 78, .24); border-radius: 5px; background: #080b0f; }
-.stars-roadmap-actions { display: flex; gap: 5px; }
-.stars-roadmap-actions button { display: inline-flex; align-items: center; gap: 5px; height: 29px; padding: 0 8px; cursor: pointer; color: #b7a370; font-size: 7px; font-weight: 900; border: 1px solid rgba(222, 179, 78, .14); border-radius: 5px; background: rgba(166, 111, 15, .045); }
-.stars-roadmap-actions button svg { width: 12px; }
-.stars-roadmap-actions .reset { color: #7d8792; border-color: var(--line); background: #11161d; }
 .stars-footer { display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 32px; padding: 7px 15px; color: #756b55; font-size: 7px; border-top: 1px solid var(--line); }
 .stars-footer svg { width: 13px; color: #d5ad50; }
 
@@ -1968,7 +1964,7 @@ button.build-card-tile { cursor: pointer; }
   }
   .stars-mobile-tabs button svg { width: 15px; flex: 0 0 auto; }
   .stars-mobile-tabs button.active { color: #f1d27f; border-color: rgba(233, 187, 78, .3); background: rgba(193, 136, 25, .09); }
-  .stars-workspace.stars-view-overview { overflow: hidden; overscroll-behavior: none; }
+  .stars-workspace.stars-view-overview { overflow-x: hidden; overflow-y: auto; overscroll-behavior: none; touch-action: pan-y; -webkit-overflow-scrolling: touch; }
   .stars-hero { grid-template-columns: 78px minmax(0, 1fr); gap: 10px; padding: 12px 10px; }
   .stars-level-orb { width: 74px; height: 74px; }
   .stars-level-orb strong { font-size: 25px; }
@@ -2066,8 +2062,6 @@ button.build-card-tile { cursor: pointer; }
   .stars-roadmap-reward { gap: 5px; }
   .stars-roadmap-reward small { font-size: 8px; line-height: 1.35; }
   .stars-roadmap-reward strong { overflow: visible; font-size: 12px; line-height: 1.35; text-overflow: clip; white-space: normal; }
-  .stars-roadmap-actions { grid-column: 1 / -1; justify-content: flex-end; }
-  .stars-roadmap-actions button { min-height: 36px; padding: 0 11px; font-size: 8px; }
   .stars-footer { display: none; }
 
   .notice-toast { right: 9px; bottom: calc(73px + env(safe-area-inset-bottom)); left: 9px; max-width: none; }

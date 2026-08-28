@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, ChevronDown, Coins, Edit3, Heart, LockKeyhole, RotateCcw, Save, ShieldCheck, Sparkles, Star, X } from "lucide-react";
+import { Check, ChevronDown, Coins, Heart, LockKeyhole, ShieldCheck, Sparkles, Star, X } from "lucide-react";
 import {
   HERO_UNLOCK_POOLS,
   STAR_COLLECTION_MAX_LEVEL,
@@ -45,9 +45,7 @@ export function StarCollectionWorkspace({
   const [section, setSection] = useState<StarSection>("overview");
   const [poolsExpanded, setPoolsExpanded] = useState(false);
   const [expandedTier, setExpandedTier] = useState<HeroUnlockTier | null>(null);
-  const [overrides, setOverrides] = useState<StarRewardOverrides>(() => loadStarRewardOverrides());
-  const [editingLevel, setEditingLevel] = useState<number | null>(null);
-  const [rewardDraft, setRewardDraft] = useState("");
+  const [overrides] = useState<StarRewardOverrides>(() => loadStarRewardOverrides());
   const safeLevel = Math.max(1, Math.min(STAR_COLLECTION_MAX_LEVEL, level));
 
   useEffect(() => saveStarRewardOverrides(overrides), [overrides]);
@@ -65,18 +63,6 @@ export function StarCollectionWorkspace({
   const progress = (safeLevel - 1) / (STAR_COLLECTION_MAX_LEVEL - 1);
   const nextLevel = safeLevel < STAR_COLLECTION_MAX_LEVEL ? safeLevel + 1 : null;
 
-  const beginEdit = (targetLevel: number) => {
-    setEditingLevel(targetLevel);
-    setRewardDraft(rewardForStarLevel(targetLevel, overrides) ?? "");
-  };
-  const saveEdit = () => {
-    if (editingLevel === null) return;
-    const next = { ...overrides };
-    if (rewardDraft.trim()) next[String(editingLevel)] = rewardDraft.trim().slice(0, 120);
-    else delete next[String(editingLevel)];
-    setOverrides(next);
-    setEditingLevel(null);
-  };
   const openSection = (nextSection: StarSection) => {
     setSection(nextSection);
     if (nextSection !== "unlocks") {
@@ -193,20 +179,14 @@ export function StarCollectionWorkspace({
                 <div className="stars-roadmap-level">{completed ? <Check /> : <LockKeyhole />}<span>Level</span><strong>{starLevel}</strong></div>
                 <div className="stars-roadmap-reward">
                   <small>{overridden ? "Local correction" : unlockCopy ? `Eligible pool • ${unlockCopy}` : "Current in-game reward"}</small>
-                  {editingLevel === starLevel ? (
-                    <input autoFocus value={rewardDraft} maxLength={120} placeholder="Enter the reward shown in game" onChange={(event) => setRewardDraft(event.target.value)} onKeyDown={(event) => event.key === "Enter" && saveEdit()} />
-                  ) : <strong>{reward ?? "Reward unavailable"}</strong>}
-                </div>
-                <div className="stars-roadmap-actions">
-                  {editingLevel === starLevel ? <button type="button" onClick={saveEdit}><Save /> Save</button> : <button type="button" onClick={() => beginEdit(starLevel)}><Edit3 /> {reward ? "Edit" : "Add"}</button>}
-                  {overridden && editingLevel !== starLevel && <button type="button" className="reset" onClick={() => { const next = { ...overrides }; delete next[String(starLevel)]; setOverrides(next); }}><RotateCcw /> Reset</button>}
+                  <strong>{reward ?? "Reward unavailable"}</strong>
                 </div>
               </article>
             );
           })}
         </main>
 
-        <footer className="stars-footer"><Sparkles />Levels 1–255 and all four current Hero Unlock pools were captured from the supplied in-game roadmap. Local corrections remain editable after balance or roster updates.</footer>
+        <footer className="stars-footer"><Sparkles />Levels 1–255 and all four current Hero Unlock pools were captured from the supplied in-game roadmap.</footer>
       </div>
     </div>
   );

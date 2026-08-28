@@ -28,6 +28,8 @@ describe("Star Collection workspace", () => {
     expect(markup).toContain('<button type="button" class="stars-tier-row"');
     expect(markup).toContain('aria-label="Show Tier IV fighters"');
     expect(markup).toContain('aria-expanded="false"');
+    expect(markup).not.toContain(">Edit</button>");
+    expect(markup).not.toContain(">Add</button>");
     expect(markup).toContain("Level</span><strong>255</strong>");
     expect(markup).toContain("All levels");
   });
