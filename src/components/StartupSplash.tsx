@@ -61,10 +61,13 @@ export function StartupSplash({ soundEnabled, onComplete }: StartupSplashProps) 
       <div className="startup-grid" />
       <div className="startup-scanline" />
       <div className="startup-brand">
-        <div className="startup-emblem"><span>K</span><i /></div>
+        <div className="startup-logo-stage">
+          <span className="startup-charge-ring" aria-hidden="true" />
+          <img src="/assets/kazucorp-logo.png" alt="KazuCorp wolf emblem" />
+        </div>
         <small>KazuCorp Systems</small>
         <h1>SQUADRA LINK</h1>
-        <div className="startup-status"><b /><span>Initialized</span></div>
+        <div className="startup-status"><b /><span>Link charged</span></div>
       </div>
       <p>Unofficial battle companion • KazuCorp production</p>
     </div>

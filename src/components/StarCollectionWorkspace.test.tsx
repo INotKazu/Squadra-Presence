@@ -22,6 +22,8 @@ describe("Star Collection workspace", () => {
     expect(markup).toContain("Heroes");
     expect(markup).toContain("Browse every level from 1–255");
     expect(markup).toContain("36 heroes");
+    expect(markup).toContain('aria-label="Show Tier IV fighters"');
+    expect(markup).toContain('aria-expanded="false"');
     expect(markup).toContain("Level</span><strong>255</strong>");
     expect(markup).toContain("All levels");
   });
