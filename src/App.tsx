@@ -19,6 +19,8 @@ import {
 import { DiscordPreview } from "./components/DiscordPreview";
 import { BuildsWorkspace } from "./components/BuildsWorkspace";
 import { HistoryWorkspace } from "./components/HistoryWorkspace";
+import { MobileNav, MobileProfileCard } from "./components/MobileCompanion";
+import type { MobileWorkspace } from "./components/MobileCompanion";
 import { RankPicker } from "./components/RankPicker";
 import { RankProgress } from "./components/RankProgress";
 import { RoleIcon } from "./components/RoleIcon";
@@ -44,6 +46,7 @@ import {
   setLaunchAtLogin,
 } from "./lib/bridge";
 import { buildPresence, deriveSelection, isSelectableRank } from "./lib/presence";
+import { detectRuntimePlatform, isMobilePlatform } from "./lib/platform";
 import { loadRankGainHistory, recordRankObservation } from "./lib/progress";
 import { rankAssetPath, roleLabel } from "./lib/ranks";
 import { STAR_COLLECTION_MAX_LEVEL } from "./lib/starCollection";
@@ -57,6 +60,8 @@ const TRACKER_BACKOFF_MS = 5 * 60_000;
 const TRACKER_MAX_BACKOFF_MS = 30 * 60_000;
 
 function App() {
+  const runtimePlatform = useMemo(() => detectRuntimePlatform(), []);
+  const mobileRuntime = isMobilePlatform(runtimePlatform);
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({ running: false, processName: null });
@@ -91,7 +96,7 @@ function App() {
   const selection = useMemo(() => deriveSelection(settings, profile), [settings, profile]);
   const roleHelpers = useMemo(() => getHelpersForRole(selection.role), [selection.role]);
   const selectedHelper = useMemo(() => getHelper(selection.helperId), [selection.helperId]);
-  const shouldBroadcast = settings.presenceEnabled && (!settings.onlyWhileGameRunning || processStatus.running);
+  const shouldBroadcast = !mobileRuntime && settings.presenceEnabled && (!settings.onlyWhileGameRunning || processStatus.running);
   const elapsedSeconds = Math.max(0, now - startedAt);
   const trackerCooldownSeconds = Math.max(0, Math.ceil((trackerCooldownUntil - Date.now()) / 1000));
 
@@ -155,6 +160,10 @@ function App() {
   }, [settings.publicId]);
 
   const checkUpdates = useCallback(async (quiet = false) => {
+    if (mobileRuntime) {
+      if (!quiet) setNotice("Mobile updates are installed through the app store or Android package release.");
+      return;
+    }
     if (!isTauri()) {
       if (!quiet) setNotice("Update checks are available in the installed desktop app.");
       return;
@@ -173,7 +182,7 @@ function App() {
     } finally {
       setUpdateChecking(false);
     }
-  }, [settings.skippedUpdateVersion]);
+  }, [mobileRuntime, settings.skippedUpdateVersion]);
 
   const installUpdate = async () => {
     setUpdateInstalling(true);
@@ -193,6 +202,10 @@ function App() {
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    document.title = mobileRuntime ? "Squadra Companion" : "Squadra Presence";
+  }, [mobileRuntime]);
 
   useEffect(() => {
     let active = true;
@@ -219,21 +232,21 @@ function App() {
   }, [settings.startupAnimation]);
 
   useEffect(() => {
-    if (startupPhase !== "done" || !settings.autoCheckUpdates) return;
+    if (mobileRuntime || startupPhase !== "done" || !settings.autoCheckUpdates) return;
     const timer = window.setTimeout(() => void checkUpdates(true), 4_000);
     return () => window.clearTimeout(timer);
-  }, [checkUpdates, settings.autoCheckUpdates, startupPhase]);
+  }, [checkUpdates, mobileRuntime, settings.autoCheckUpdates, startupPhase]);
 
   useEffect(() => {
     setPlayerJournal(loadPlayerJournal(settings.publicId));
   }, [settings.publicId]);
 
   useEffect(() => {
-    if (!isTauri()) return;
+    if (mobileRuntime || !isTauri()) return;
     void setLaunchAtLogin(settings.launchAtLogin).catch((error) => {
       setNotice(error instanceof Error ? error.message : String(error));
     });
-  }, [settings.launchAtLogin]);
+  }, [mobileRuntime, settings.launchAtLogin]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Math.floor(Date.now() / 1000)), 1000);
@@ -241,6 +254,7 @@ function App() {
   }, []);
 
   useEffect(() => {
+    if (mobileRuntime) return;
     if (
       settings.presenceEnabled &&
       discordStatus.lastError &&
@@ -250,13 +264,17 @@ function App() {
       setNotice(discordStatus.lastError);
     }
     if (!discordStatus.lastError) surfacedDiscordError.current = null;
-  }, [discordStatus.lastError, settings.presenceEnabled]);
+  }, [discordStatus.lastError, mobileRuntime, settings.presenceEnabled]);
 
   useEffect(() => {
     void syncTracker(true);
   }, [syncTracker]);
 
   useEffect(() => {
+    if (mobileRuntime) {
+      setProcessStatus({ running: false, processName: null });
+      return;
+    }
     let active = true;
     const check = async () => {
       try {
@@ -272,15 +290,23 @@ function App() {
       active = false;
       window.clearInterval(timer);
     };
-  }, [settings.processHints]);
+  }, [mobileRuntime, settings.processHints]);
 
   useEffect(() => {
-    if (!settings.autoSync || !processStatus.running) return;
+    if (!settings.autoSync || (!mobileRuntime && !processStatus.running)) return;
+    const syncWhenVisible = () => {
+      if (document.visibilityState === "visible") void syncTracker(true);
+    };
     const timer = window.setInterval(() => void syncTracker(true), TRACKER_INTERVAL_MS);
-    return () => window.clearInterval(timer);
-  }, [processStatus.running, settings.autoSync, syncTracker]);
+    if (mobileRuntime) document.addEventListener("visibilitychange", syncWhenVisible);
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", syncWhenVisible);
+    };
+  }, [mobileRuntime, processStatus.running, settings.autoSync, syncTracker]);
 
   useEffect(() => {
+    if (mobileRuntime) return;
     const previouslyRunning = previousGameRunning.current;
     const autoWasEnabled = previousAutoPresence.current;
     previousGameRunning.current = processStatus.running;
@@ -295,7 +321,7 @@ function App() {
     setSettings((current) => current.presenceEnabled === processStatus.running
       ? current
       : { ...current, presenceEnabled: processStatus.running });
-  }, [processStatus.running, settings.autoPresenceWithGame]);
+  }, [mobileRuntime, processStatus.running, settings.autoPresenceWithGame]);
 
   useEffect(() => {
     if (settings.source !== "tracker" || !profile?.latestMatch) return;
@@ -321,6 +347,7 @@ function App() {
   }, [profile, settings.characterRankingId, settings.role, settings.source]);
 
   useEffect(() => {
+    if (mobileRuntime) return;
     const refreshStatus = async () => {
       try {
         setDiscordStatus(await getDiscordStatus());
@@ -331,9 +358,10 @@ function App() {
     void refreshStatus();
     const timer = window.setInterval(refreshStatus, 2_000);
     return () => window.clearInterval(timer);
-  }, []);
+  }, [mobileRuntime]);
 
   useEffect(() => {
+    if (mobileRuntime) return;
     const payload = buildPresence(selection, startedAt);
     const hash = shouldBroadcast ? JSON.stringify(payload) : "";
     if (hash === sentPresenceHash.current) return;
@@ -351,7 +379,7 @@ function App() {
       }
     }, 220);
     return () => window.clearTimeout(timer);
-  }, [selection, shouldBroadcast, startedAt]);
+  }, [mobileRuntime, selection, shouldBroadcast, startedAt]);
 
   const updateSettings = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) => {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -393,6 +421,21 @@ function App() {
         ? "Connecting"
         : "Armed";
   const completeStartup = useCallback(() => setStartupPhase("done"), []);
+  const activeMobileWorkspace: MobileWorkspace = settingsOpen
+    ? "settings"
+    : historyOpen
+      ? "history"
+      : starsOpen
+        ? "stars"
+        : buildsOpen
+          ? "builds"
+          : "dashboard";
+  const navigateMobile = (workspace: MobileWorkspace) => {
+    setSettingsOpen(workspace === "settings");
+    setHistoryOpen(workspace === "history");
+    setStarsOpen(workspace === "stars");
+    setBuildsOpen(workspace === "builds");
+  };
 
   if (startupPhase === "checking") return <div className="startup-blank" />;
   if (startupPhase === "visible") {
@@ -400,16 +443,27 @@ function App() {
   }
 
   return (
-    <div className="app-shell">
-      <Sidebar selection={selection} profile={profile} rankGainHistory={rankGainHistory} elapsedSeconds={elapsedSeconds} />
+    <div className={`app-shell ${mobileRuntime ? "app-shell--mobile" : ""}`}>
+      {!mobileRuntime && <Sidebar selection={selection} profile={profile} rankGainHistory={rankGainHistory} elapsedSeconds={elapsedSeconds} />}
 
       <main className="app-main">
         <header className="topbar">
           <div>
-            <span className="eyebrow">Companion dashboard</span>
-            <h1>Battle presence control</h1>
+            <span className="eyebrow">{mobileRuntime ? "KazuCorp mobile" : "Companion dashboard"}</span>
+            <h1>{mobileRuntime ? "Squadra Companion" : "Battle presence control"}</h1>
           </div>
-          <div className="topbar-actions">
+          {mobileRuntime ? (
+            <div className="mobile-topbar-actions">
+              <StatusPill
+                icon={CloudDownload}
+                label={trackerCooldownSeconds ? `Wait ${Math.ceil(trackerCooldownSeconds / 60)}m` : syncedAt ? formatRelativeTime(new Date(syncedAt).toISOString()) : "Not synced"}
+                tone={trackerCooldownSeconds ? "warning" : profile ? "online" : "muted"}
+              />
+              <button className="icon-button" type="button" onClick={() => void syncTracker()} disabled={syncing || trackerCooldownSeconds > 0} aria-label="Sync tracker now">
+                <RefreshCw size={18} className={syncing ? "spin" : ""} />
+              </button>
+            </div>
+          ) : <div className="topbar-actions">
             <div className="system-statuses">
               <StatusPill
                 icon={Gamepad2}
@@ -455,10 +509,10 @@ function App() {
             <button className={`broadcast-button ${settings.presenceEnabled ? "broadcast-button--on" : ""}`} type="button" onClick={togglePresence}>
               <span /> {settings.presenceEnabled ? "Stop presence" : "Start presence"}
             </button>
-          </div>
+          </div>}
         </header>
 
-        {availableUpdate && (
+        {!mobileRuntime && availableUpdate && (
           <UpdateBanner
             update={availableUpdate}
             installing={updateInstalling}
@@ -496,7 +550,7 @@ function App() {
               <div className="selection-data">
                 <span className="eyebrow">Fighter</span>
                 <h3>{currentCharacter.name}</h3>
-                <p>{selection.largeImageKey ? "Discord character asset ready" : "Using the application icon until this fighter asset is uploaded"}</p>
+                <p>{mobileRuntime ? "Your selected fighter, rank, and helper stay with this device and can move by backup." : selection.largeImageKey ? "Discord character asset ready" : "Using the application icon until this fighter asset is uploaded"}</p>
                 <div className="selection-badges">
                   <span><RoleIcon role={selection.role} /> {roleLabel(selection.role)}</span>
                   <span>{rankAssetPath(selection.rank) && <img src={rankAssetPath(selection.rank)} alt="" />} {selection.rank}</span>
@@ -513,7 +567,7 @@ function App() {
             <div className="readiness-list">
               <div className={selection.largeImageKey ? "ready" : "pending"}>
                 {selection.largeImageKey ? <CheckCircle2 /> : <AlertTriangle />}
-                <span><strong>Character</strong><small>{selection.largeImageKey ? currentCharacter.name : `${currentCharacter.name} • artwork pending`}</small></span>
+                <span><strong>Character</strong><small>{selection.largeImageKey || mobileRuntime ? currentCharacter.name : `${currentCharacter.name} • artwork pending`}</small></span>
               </div>
               <div className="ready">
                 <ShieldCheck />
@@ -526,18 +580,28 @@ function App() {
             </div>
           </section>
 
-          <DiscordPreview
-            selection={selection}
-            nickname={profile?.nickname ?? "Player"}
-            elapsedSeconds={elapsedSeconds}
-            live={shouldBroadcast && discordStatus.connected}
-          />
+          {mobileRuntime ? (
+            <MobileProfileCard
+              profile={profile}
+              settings={settings}
+              journal={playerJournal}
+              onOpenHistory={() => navigateMobile("history")}
+              onOpenStars={() => navigateMobile("stars")}
+            />
+          ) : (
+            <DiscordPreview
+              selection={selection}
+              nickname={profile?.nickname ?? "Player"}
+              elapsedSeconds={elapsedSeconds}
+              live={shouldBroadcast && discordStatus.connected}
+            />
+          )}
 
           <section className="control-deck shell-panel">
             <div className="panel-heading compact">
               <div>
                 <span className="eyebrow">Squadra control deck</span>
-                <h2>Presence mapping</h2>
+                <h2>{mobileRuntime ? "Fighter workspace" : "Presence mapping"}</h2>
               </div>
               <div className="segmented-control">
                 <button
@@ -672,15 +736,15 @@ function App() {
         <footer className="main-footer">
           <span>Tracker: DBGS Builds community data</span>
           <i />
-          <span>Discord App 1541227940354859099</span>
-          <i />
-          <span>{isTauri() ? "Desktop runtime" : "Browser preview mode"}</span>
+          {!mobileRuntime && <><span>Discord App 1541227940354859099</span><i /></>}
+          <span>{mobileRuntime ? `${runtimePlatform === "android" ? "Android" : "iOS"} companion • Local data` : isTauri() ? "Desktop runtime" : "Browser preview mode"}</span>
         </footer>
       </main>
 
       {settingsOpen && (
         <SettingsPanel
           settings={settings}
+          mobileRuntime={mobileRuntime}
           onChange={setSettings}
           onSelectCharacter={selectManualCharacter}
           onCheckUpdates={() => checkUpdates(false)}
@@ -707,6 +771,7 @@ function App() {
         />
       )}
       {buildsOpen && <BuildsWorkspace initialCharacterId={selection.characterId} onClose={() => setBuildsOpen(false)} />}
+      {mobileRuntime && <MobileNav active={activeMobileWorkspace} onNavigate={navigateMobile} />}
       {notice && (
         <button className="notice-toast" type="button" onClick={() => setNotice(null)}>
           <AlertTriangle size={17} />

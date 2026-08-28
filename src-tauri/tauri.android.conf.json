@@ -1,0 +1,22 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Squadra Companion",
+  "identifier": "com.kazucorp.squadracompanion",
+  "app": {
+    "windows": [
+      {
+        "title": "Squadra Companion",
+        "fullscreen": false
+      }
+    ]
+  },
+  "bundle": {
+    "active": true,
+    "createUpdaterArtifacts": false,
+    "shortDescription": "Your local Squadra tracker and build companion",
+    "longDescription": "A local-first mobile companion for tracker history, ranks, Star Collection, fighter builds, cards, helpers, abilities, and portable backups.",
+    "android": {
+      "minSdkVersion": 24
+    }
+  }
+}

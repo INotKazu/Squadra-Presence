@@ -1,12 +1,13 @@
 import { useRef, useState } from "react";
-import { Download, RefreshCw, Upload, X } from "lucide-react";
-import { downloadBackup, restoreAppBackup } from "../lib/backup";
+import { Download, RefreshCw, Share2, Upload, X } from "lucide-react";
+import { exportAppBackup, restoreAppBackup } from "../lib/backup";
 import { CHARACTERS, getCharacter } from "../lib/characters";
 import { roleLabel } from "../lib/ranks";
 import type { AppSettings } from "../types";
 
 interface SettingsPanelProps {
   settings: AppSettings;
+  mobileRuntime?: boolean;
   onChange: (settings: AppSettings) => void;
   onSelectCharacter: (characterRankingId: string) => void;
   onCheckUpdates: () => Promise<void>;
@@ -14,7 +15,7 @@ interface SettingsPanelProps {
   onClose: () => void;
 }
 
-export function SettingsPanel({ settings, onChange, onSelectCharacter, onCheckUpdates, updateChecking, onClose }: SettingsPanelProps) {
+export function SettingsPanel({ settings, mobileRuntime = false, onChange, onSelectCharacter, onCheckUpdates, updateChecking, onClose }: SettingsPanelProps) {
   const backupInputRef = useRef<HTMLInputElement>(null);
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) =>
@@ -36,12 +37,22 @@ export function SettingsPanel({ settings, onChange, onSelectCharacter, onCheckUp
     }
   };
 
+  const exportBackup = async () => {
+    try {
+      const result = await exportAppBackup(settings, mobileRuntime);
+      setBackupMessage(result === "shared" ? "Backup shared." : "Backup downloaded.");
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") return;
+      setBackupMessage(error instanceof Error ? error.message : String(error));
+    }
+  };
+
   return (
     <div className="settings-scrim" onMouseDown={(event) => event.currentTarget === event.target && onClose()}>
       <section className="settings-panel" aria-label="Settings">
         <div className="settings-title">
           <div>
-            <span className="eyebrow">Squadra Presence</span>
+            <span className="eyebrow">{mobileRuntime ? "Squadra Companion" : "Squadra Presence"}</span>
             <h2>Settings</h2>
           </div>
           <button className="icon-button" type="button" onClick={onClose} aria-label="Close settings"><X /></button>
@@ -86,38 +97,44 @@ export function SettingsPanel({ settings, onChange, onSelectCharacter, onCheckUp
           </select>
         </label>
 
-        <label>
-          <span>Game process hints</span>
-          <input
-            value={settings.processHints.join(", ")}
-            onChange={(event) => update("processHints", event.target.value.split(",").map((part) => part.trim()).filter(Boolean))}
-          />
-          <small>Comma-separated name fragments. Detection never reads game memory.</small>
-        </label>
+        {!mobileRuntime && (
+          <label>
+            <span>Game process hints</span>
+            <input
+              value={settings.processHints.join(", ")}
+              onChange={(event) => update("processHints", event.target.value.split(",").map((part) => part.trim()).filter(Boolean))}
+            />
+            <small>Comma-separated name fragments. Detection never reads game memory.</small>
+          </label>
+        )}
 
         <div className="toggle-list">
           <label className="toggle-row">
-            <div><strong>Automatic tracker sync</strong><small>Refresh every two minutes while the game is running, with automatic backoff if the tracker is busy.</small></div>
+            <div><strong>Automatic tracker sync</strong><small>{mobileRuntime ? "Refresh every two minutes while the companion is open, and once whenever you return to it." : "Refresh every two minutes while the game is running, with automatic backoff if the tracker is busy."}</small></div>
             <input type="checkbox" checked={settings.autoSync} onChange={(event) => update("autoSync", event.target.checked)} />
             <span className="switch" />
           </label>
+          {!mobileRuntime && (
+            <>
+              <label className="toggle-row">
+                <div><strong>Start and stop with the game</strong><small>Enable presence when Squadra opens and clear it when the game closes.</small></div>
+                <input type="checkbox" checked={settings.autoPresenceWithGame} onChange={(event) => update("autoPresenceWithGame", event.target.checked)} />
+                <span className="switch" />
+              </label>
+              <label className="toggle-row">
+                <div><strong>Launch hidden with Windows</strong><small>Keep the companion ready in the system tray, so it can detect Squadra without manual startup.</small></div>
+                <input type="checkbox" checked={settings.launchAtLogin} onChange={(event) => update("launchAtLogin", event.target.checked)} />
+                <span className="switch" />
+              </label>
+              <label className="toggle-row">
+                <div><strong>Only while game is running</strong><small>Clear presence when the process closes.</small></div>
+                <input type="checkbox" checked={settings.onlyWhileGameRunning} onChange={(event) => update("onlyWhileGameRunning", event.target.checked)} />
+                <span className="switch" />
+              </label>
+            </>
+          )}
           <label className="toggle-row">
-            <div><strong>Start and stop with the game</strong><small>Enable presence when Squadra opens and clear it when the game closes.</small></div>
-            <input type="checkbox" checked={settings.autoPresenceWithGame} onChange={(event) => update("autoPresenceWithGame", event.target.checked)} />
-            <span className="switch" />
-          </label>
-          <label className="toggle-row">
-            <div><strong>Launch hidden with Windows</strong><small>Keep the companion ready in the system tray, so it can detect Squadra without manual startup.</small></div>
-            <input type="checkbox" checked={settings.launchAtLogin} onChange={(event) => update("launchAtLogin", event.target.checked)} />
-            <span className="switch" />
-          </label>
-          <label className="toggle-row">
-            <div><strong>Only while game is running</strong><small>Clear presence when the process closes.</small></div>
-            <input type="checkbox" checked={settings.onlyWhileGameRunning} onChange={(event) => update("onlyWhileGameRunning", event.target.checked)} />
-            <span className="switch" />
-          </label>
-          <label className="toggle-row">
-            <div><strong>KazuCorp startup sequence</strong><small>Show the animated Squadra Link screen on a manual cold launch. Hidden Windows startup and tray restores skip it.</small></div>
+            <div><strong>KazuCorp startup sequence</strong><small>{mobileRuntime ? "Show the four-second animated Squadra Link screen once when the app opens." : "Show the animated Squadra Link screen on a manual cold launch. Hidden Windows startup and tray restores skip it."}</small></div>
             <input type="checkbox" checked={settings.startupAnimation} onChange={(event) => update("startupAnimation", event.target.checked)} />
             <span className="switch" />
           </label>
@@ -126,25 +143,29 @@ export function SettingsPanel({ settings, onChange, onSelectCharacter, onCheckUp
             <input type="checkbox" checked={settings.startupSound} onChange={(event) => update("startupSound", event.target.checked)} disabled={!settings.startupAnimation} />
             <span className="switch" />
           </label>
-          <label className="toggle-row">
-            <div><strong>Automatically check for updates</strong><small>Check KazuCorp's signed GitHub releases after startup. Nothing installs until you click Install update.</small></div>
-            <input type="checkbox" checked={settings.autoCheckUpdates} onChange={(event) => update("autoCheckUpdates", event.target.checked)} />
-            <span className="switch" />
-          </label>
+          {!mobileRuntime && (
+            <label className="toggle-row">
+              <div><strong>Automatically check for updates</strong><small>Check KazuCorp's signed GitHub releases after startup. Nothing installs until you click Install update.</small></div>
+              <input type="checkbox" checked={settings.autoCheckUpdates} onChange={(event) => update("autoCheckUpdates", event.target.checked)} />
+              <span className="switch" />
+            </label>
+          )}
         </div>
 
-        <div className="settings-updates">
-          <div><strong>Application updates</strong><small>Update packages must pass Tauri's embedded signature check before installation.</small></div>
-          <button type="button" disabled={updateChecking} onClick={() => void onCheckUpdates()}><RefreshCw className={updateChecking ? "spin" : ""} /> {updateChecking ? "Checking" : "Check now"}</button>
-        </div>
+        {!mobileRuntime && (
+          <div className="settings-updates">
+            <div><strong>Application updates</strong><small>Update packages must pass Tauri's embedded signature check before installation.</small></div>
+            <button type="button" disabled={updateChecking} onClick={() => void onCheckUpdates()}><RefreshCw className={updateChecking ? "spin" : ""} /> {updateChecking ? "Checking" : "Check now"}</button>
+          </div>
+        )}
 
         <div className="settings-backup">
           <div>
             <strong>Backup and restore</strong>
-            <small>Save settings, custom builds, editable Kazuma's Picks, Star reward notes, Helper choices, and local match/rank history. The backup contains your public player ID, so share build codes instead of sharing this file.</small>
+            <small>Save settings, custom builds, editable Kazuma's Picks, Star reward notes, Helper choices, and local match/rank history. {mobileRuntime ? "Use this file to move your companion data between PC and phone." : "The backup contains your public player ID, so share build codes instead of sharing this file."}</small>
           </div>
           <div className="settings-backup-actions">
-            <button type="button" onClick={() => { downloadBackup(settings); setBackupMessage("Backup downloaded."); }}><Download size={15} /> Export</button>
+            <button type="button" onClick={() => void exportBackup()}>{mobileRuntime ? <Share2 size={15} /> : <Download size={15} />} {mobileRuntime ? "Share backup" : "Export"}</button>
             <button type="button" onClick={() => backupInputRef.current?.click()}><Upload size={15} /> Restore</button>
             <input
               ref={backupInputRef}

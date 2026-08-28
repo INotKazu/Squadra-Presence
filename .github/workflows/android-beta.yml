@@ -1,0 +1,97 @@
+name: Build Android beta
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/mobile-companion]
+    paths:
+      - ".github/workflows/android-beta.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "src/**"
+      - "src-tauri/**"
+      - "index.html"
+      - "vite.config.ts"
+      - "tsconfig*.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-beta-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-beta:
+    name: Test and build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Use Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Configure Rust and Android NDK
+        shell: bash
+        run: |
+          rustup default stable
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+
+          NDK_PATH="${ANDROID_NDK_LATEST_HOME:-${ANDROID_NDK_ROOT:-}}"
+          if [ -z "$NDK_PATH" ] || [ ! -d "$NDK_PATH" ]; then
+            NDK_PATH="$(find "$ANDROID_HOME/ndk" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -n 1)"
+          fi
+          test -n "$NDK_PATH" -a -d "$NDK_PATH"
+          echo "NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "NDK_ROOT=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_HOME=$NDK_PATH" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$NDK_PATH" >> "$GITHUB_ENV"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Normalize bundle icons for Android
+        shell: bash
+        run: |
+          if ! command -v convert >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+          fi
+
+          for icon in src-tauri/icons/*.png; do
+            rgba_icon="${icon%.png}.rgba.png"
+            convert "$icon" -alpha on "PNG32:$rgba_icon"
+            mv "$rgba_icon" "$icon"
+          done
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Initialize Android project
+        run: npx --no-install tauri android init --ci
+
+      - name: Build installable debug APK
+        run: npx --no-install tauri android build --debug --apk
+
+      - name: Upload Android beta
+        uses: actions/upload-artifact@v4
+        with:
+          name: squadra-companion-android-beta
+          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 14

@@ -11,7 +11,13 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "mobile:android:init": "tauri android init --ci",
+    "mobile:android:dev": "tauri android dev",
+    "mobile:android:build": "tauri android build --debug --apk",
+    "mobile:ios:init": "tauri ios init --ci",
+    "mobile:ios:dev": "tauri ios dev",
+    "mobile:ios:build": "tauri ios build"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.8.0",

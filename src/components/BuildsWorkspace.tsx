@@ -177,6 +177,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
   const [guideError, setGuideError] = useState<string | null>(null);
   const abilityRequestId = useRef(0);
   const guideRequestId = useRef(0);
+  const contentScrollRef = useRef<HTMLDivElement>(null);
 
   const character = getCharacter(selectedCharacterId);
   const heroId = getHeroReferenceId(character);
@@ -207,6 +208,10 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
     setDraft(null);
     setCuratedDraft(null);
   }, [selectedCharacterId]);
+
+  useEffect(() => {
+    if (contentScrollRef.current) contentScrollRef.current.scrollTop = 0;
+  }, [activeTab, selectedCharacterId]);
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -476,7 +481,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
           </div>
 
           {activeTab === "builds" ? (
-            <div className="builds-content">
+            <div className="builds-content" ref={contentScrollRef}>
               <section className="recommended-build build-surface">
                 <div className="build-section-heading">
                   <div><span className="eyebrow">Season 6 reference</span><h3>Recommended build</h3></div>
@@ -633,7 +638,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
               <p className="build-source-note">Card effects are concise Season 6 summaries. Hover or focus any card to read its effect. Recommendations are attributed to DBGS Builds and may change after balance updates.</p>
             </div>
           ) : (
-            <div className="abilities-content">
+            <div className="abilities-content" ref={contentScrollRef}>
               <div className="ability-heading build-surface">
                 <div><span className="eyebrow">Fighter reference</span><h3>{character.name} skills & passives</h3><p>Loaded from the current DBGS character reference and cached locally for seven days.</p></div>
                 <button type="button" className="build-action secondary" onClick={() => void loadAbilities(true)} disabled={abilitiesLoading}><RefreshCw className={abilitiesLoading ? "spin" : ""} size={15} /> Refresh</button>

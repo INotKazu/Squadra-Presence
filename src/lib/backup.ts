@@ -76,12 +76,32 @@ export function restoreAppBackup(text: string): AppBackup {
   return backup;
 }
 
+function backupFilename(): string {
+  return `Squadra-Presence-Backup-${new Date().toISOString().slice(0, 10)}.json`;
+}
+
 export function downloadBackup(settings: AppSettings): void {
   const blob = new Blob([serializeAppBackup(settings)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
-  anchor.download = `Squadra-Presence-Backup-${new Date().toISOString().slice(0, 10)}.json`;
+  anchor.download = backupFilename();
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+export async function exportAppBackup(settings: AppSettings, preferShare = false): Promise<"shared" | "downloaded"> {
+  const file = new File([serializeAppBackup(settings)], backupFilename(), { type: "application/json" });
+  if (preferShare && typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+    await navigator.share({
+      title: "Squadra Companion backup",
+      text: "Private Squadra Companion data backup. Keep this file private because it contains the public tracker ID.",
+      files: [file],
+    });
+    return "shared";
+  }
+  downloadBackup(settings);
+  return "downloaded";
 }
