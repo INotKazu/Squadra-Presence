@@ -7,22 +7,28 @@ const activityName = "MainActivity.kt";
 export function patchMainActivity(source) {
   if (source.includes("View.OVER_SCROLL_NEVER")) return source;
 
-  const activityDeclaration = /class MainActivity\s*:\s*TauriActivity\(\)\s*/;
-  if (!activityDeclaration.test(source)) {
-    throw new Error("MainActivity does not use the expected TauriActivity template");
-  }
-
-  return source.replace(
-    activityDeclaration,
-    `class MainActivity : TauriActivity() {
+  const activityWithBody = /class MainActivity\s*:\s*TauriActivity\(\)\s*\{/;
+  const activityWithoutBody = /class MainActivity\s*:\s*TauriActivity\(\)\s*$/m;
+  const webViewHook = `
   override fun onWebViewCreate(webView: android.webkit.WebView) {
     webView.overScrollMode = android.view.View.OVER_SCROLL_NEVER
     webView.isVerticalScrollBarEnabled = false
     webView.isHorizontalScrollBarEnabled = false
     super.onWebViewCreate(webView)
   }
-}
-`,
+`;
+
+  if (activityWithBody.test(source)) {
+    return source.replace(activityWithBody, (declaration) => `${declaration}${webViewHook}`);
+  }
+
+  if (!activityWithoutBody.test(source)) {
+    throw new Error("MainActivity does not use the expected TauriActivity template");
+  }
+
+  return source.replace(
+    activityWithoutBody,
+    (declaration) => `${declaration.trimEnd()} {${webViewHook}}`,
   );
 }
 

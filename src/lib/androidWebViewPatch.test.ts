@@ -22,4 +22,23 @@ class MainActivity : TauriActivity()
 
     expect(patchMainActivity(once)).toBe(once);
   });
+
+  it("preserves the current Tauri activity body", () => {
+    const source = `package com.kazucorp.squadracompanion
+
+class MainActivity : TauriActivity() {
+  override fun onCreate(savedInstanceState: android.os.Bundle?) {
+    enableEdgeToEdge()
+    super.onCreate(savedInstanceState)
+  }
+}
+`;
+
+    const patched = patchMainActivity(source);
+
+    expect(patched.match(/class MainActivity/g)).toHaveLength(1);
+    expect(patched).toContain("override fun onWebViewCreate");
+    expect(patched).toContain("override fun onCreate");
+    expect(patched).toContain("enableEdgeToEdge()");
+  });
 });
