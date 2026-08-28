@@ -43,6 +43,7 @@ The interface is styled after the dark Squadra battle-card mockup: a fighter das
 - Locally editable Kazuma's Picks with bundled-default reset and backup coverage
 - A four-second KazuCorp Systems cold-launch sequence with an original synthesized chime, skipped during hidden startup and tray restore
 - Signed one-click updates from `INotKazu/Squadra-Presence` GitHub Releases, with release notes, progress, later, and skip controls
+- A transparent local OBS browser overlay with fighter art, role rank, RP progress, session W–L, net RP, and elapsed time
 - JSON backup and restore for settings, custom builds, Helper choices, learned rank pace, and local history
 - Browser preview mode with representative fixture data
 - Local settings, rank-gain history, build library, and ability-reference cache
@@ -152,6 +153,15 @@ Tauri verifies every downloaded artifact against the embedded public key before 
 - Starting the executable again focuses the existing window instead of creating a second background copy.
 
 The companion remains in the tray after the game closes. Windows cannot automatically launch this independent fan app from the game itself, so the hidden login launch is what lets it notice future game sessions without manual startup.
+
+## OBS recording and stream overlay
+
+1. Open **OBS** from the desktop dashboard header.
+2. Copy the local browser-source URL shown in the overlay control.
+3. In OBS, add a **Browser** source and paste the URL.
+4. Set the source width to **760** and height to **190**, position it in a corner, and lock the source.
+
+The overlay server listens only on `127.0.0.1`, so it is not exposed to the local network or internet. Keep Squadra Presence running in the system tray while OBS is using the source. The **Reset session** control starts W–L, net RP, and elapsed time from zero; starting a newly detected game session also resets these values. Completed-match statistics refresh when they appear in the public tracker.
 
 ## Browser-only UI preview
 

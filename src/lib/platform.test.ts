@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectRuntimePlatform, isMobilePlatform } from "./platform";
+import { detectRuntimePlatform, isMobilePlatform, supportsObsOverlay } from "./platform";
 
 describe("runtime platform detection", () => {
   it("recognizes Android inside a Tauri webview", () => {
@@ -22,5 +22,9 @@ describe("runtime platform detection", () => {
     expect(detectRuntimePlatform("Mozilla/5.0 (Windows NT 10.0; Win64; x64)", true)).toBe("desktop");
     expect(detectRuntimePlatform("Mozilla/5.0 (X11; Linux x86_64)", false)).toBe("browser");
     expect(isMobilePlatform("desktop")).toBe(false);
+    expect(supportsObsOverlay("desktop")).toBe(true);
+    expect(supportsObsOverlay("browser")).toBe(false);
+    expect(supportsObsOverlay("android")).toBe(false);
+    expect(supportsObsOverlay("ios")).toBe(false);
   });
 });

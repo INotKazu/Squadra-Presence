@@ -24,6 +24,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   startupSound: true,
   autoCheckUpdates: true,
   skippedUpdateVersion: null,
+  overlayEnabled: true,
 };
 
 export function sanitizeSettings(value: unknown): AppSettings {
@@ -69,6 +70,7 @@ export function sanitizeSettings(value: unknown): AppSettings {
     skippedUpdateVersion: typeof parsed.skippedUpdateVersion === "string" && /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/.test(parsed.skippedUpdateVersion)
       ? parsed.skippedUpdateVersion
       : null,
+    overlayEnabled: typeof parsed.overlayEnabled === "boolean" ? parsed.overlayEnabled : DEFAULT_SETTINGS.overlayEnabled,
   };
 }
 

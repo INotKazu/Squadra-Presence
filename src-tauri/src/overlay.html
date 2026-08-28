@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Squadra Presence OBS Overlay</title>
+  <style>
+    :root { color-scheme: dark; font-family: Inter, "Segoe UI", Arial, sans-serif; }
+    * { box-sizing: border-box; }
+    html, body { width: 760px; height: 190px; margin: 0; overflow: hidden; background: transparent; }
+    body { opacity: 1; transition: opacity .25s ease; }
+    body.is-hidden { opacity: 0; }
+    .hud { position: relative; width: 748px; height: 174px; margin: 8px 4px 8px 8px; filter: drop-shadow(0 12px 16px rgba(0,0,0,.58)); }
+    .panel { position: absolute; inset: 7px 0 7px 84px; overflow: hidden; border: 1px solid rgba(245,199,103,.38); border-radius: 10px 3px 10px 3px; background: linear-gradient(105deg, rgba(11,14,20,.96), rgba(17,20,27,.93) 56%, rgba(7,9,13,.92)); clip-path: polygon(15px 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%,0 15px); }
+    .panel::before { position: absolute; inset: 0; content: ""; opacity: .23; background-image: linear-gradient(115deg, transparent 47%, rgba(255,255,255,.08) 48%, transparent 49%), radial-gradient(circle at 1px 1px, rgba(255,255,255,.13) 1px, transparent 0); background-size: 100% 100%, 17px 17px; mask-image: linear-gradient(90deg, black, transparent 72%); }
+    .panel::after { position: absolute; right: -50px; bottom: -92px; width: 300px; height: 220px; content: ""; border-radius: 50%; background: repeating-conic-gradient(from 12deg, rgba(239,186,57,.13) 0 3deg, transparent 3deg 12deg); mask-image: radial-gradient(circle, black 0, transparent 70%); }
+    .gold-line { position: absolute; z-index: 3; top: 7px; right: 18px; left: 99px; height: 2px; opacity: .8; background: linear-gradient(90deg,#f7cf6a,rgba(247,207,106,.16),transparent); box-shadow: 0 0 10px rgba(245,194,65,.55); }
+    .fighter { position: absolute; z-index: 5; bottom: 0; left: -3px; width: 190px; height: 184px; object-fit: contain; object-position: 50% 100%; filter: drop-shadow(0 8px 7px rgba(0,0,0,.72)) drop-shadow(0 0 12px rgba(239,190,69,.2)); transition: opacity .2s ease, transform .2s ease; }
+    .fighter[src=""] { opacity: 0; }
+    .content { position: absolute; z-index: 4; inset: 22px 112px 18px 200px; display: grid; grid-template-rows: 18px 48px 35px 22px; min-width: 0; }
+    .signal { display: flex; align-items: center; gap: 7px; color: #a99159; font-size: 8px; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+    .signal i { width: 6px; height: 6px; border-radius: 50%; background: #f5c85d; box-shadow: 0 0 9px #f5c85d; animation: pulse 1.8s ease-in-out infinite; }
+    .signal b { margin-left: auto; color: #6e7580; font-size: 7px; letter-spacing: .11em; }
+    .identity { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .identity h1 { margin: 0; overflow: hidden; color: #f7f8fa; font-size: 26px; line-height: 1; font-weight: 950; letter-spacing: -.035em; text-overflow: ellipsis; white-space: nowrap; text-transform: uppercase; text-shadow: 0 3px 10px rgba(0,0,0,.7); }
+    .role { flex: 0 0 auto; padding: 5px 8px; color: #8dd6ff; font-size: 7px; font-weight: 950; letter-spacing: .13em; text-transform: uppercase; border: 1px solid rgba(91,196,255,.28); border-radius: 4px; background: rgba(54,153,220,.1); }
+    .role.damage { color: #ff8b91; border-color: rgba(255,91,101,.3); background: rgba(210,43,56,.1); }
+    .role.technical { color: #8be69a; border-color: rgba(89,219,113,.28); background: rgba(43,174,70,.1); }
+    .stats { display: grid; grid-template-columns: 1fr 1fr 1.2fr; align-items: center; border-top: 1px solid rgba(255,255,255,.08); border-bottom: 1px solid rgba(255,255,255,.08); }
+    .stat { display: flex; min-width: 0; align-items: baseline; gap: 6px; }
+    .stat + .stat { padding-left: 13px; border-left: 1px solid rgba(255,255,255,.08); }
+    .stat span { color: #68717d; font-size: 7px; font-weight: 900; letter-spacing: .11em; text-transform: uppercase; }
+    .stat strong { color: #e8ebef; font-size: 14px; font-weight: 950; font-variant-numeric: tabular-nums; }
+    .stat strong.positive { color: #75e59b; }
+    .stat strong.negative { color: #ff7d89; }
+    .progress-row { display: grid; grid-template-columns: auto minmax(80px,1fr) auto; align-items: end; gap: 8px; color: #737c88; font-size: 7px; font-weight: 900; letter-spacing: .09em; text-transform: uppercase; }
+    .bar { height: 4px; margin-bottom: 2px; overflow: hidden; border-radius: 999px; background: rgba(255,255,255,.08); }
+    .bar i { display: block; width: 0; height: 100%; border-radius: inherit; background: linear-gradient(90deg,#b87f17,#ffd778); box-shadow: 0 0 8px rgba(245,194,68,.65); transition: width .45s ease; }
+    .rank { position: absolute; z-index: 6; top: 28px; right: 17px; display: grid; width: 86px; place-items: center; }
+    .rank img { width: 80px; height: 80px; object-fit: contain; filter: drop-shadow(0 5px 6px rgba(0,0,0,.6)); }
+    .rank strong { margin-top: -5px; color: #f4d37d; font-size: 10px; font-weight: 950; letter-spacing: .12em; text-transform: uppercase; }
+    .rank small { margin-top: 3px; color: #686f79; font-size: 7px; font-weight: 900; }
+    @keyframes pulse { 50% { opacity: .48; transform: scale(.82); } }
+  </style>
+</head>
+<body class="is-hidden">
+  <div class="hud" aria-label="Squadra ranked session overlay">
+    <div class="panel"></div><div class="gold-line"></div>
+    <img class="fighter" id="fighter" alt="">
+    <div class="content">
+      <div class="signal"><i></i><span>KazuCorp ranked link</span><b id="player">PLAYER</b></div>
+      <div class="identity"><h1 id="character">Bardock</h1><span class="role tank" id="role">Tank</span></div>
+      <div class="stats">
+        <div class="stat"><span>Session</span><strong id="record">0W–0L</strong></div>
+        <div class="stat"><span>Net RP</span><strong id="rp">±0</strong></div>
+        <div class="stat"><span>Live</span><strong id="timer">00:00:00</strong></div>
+      </div>
+      <div class="progress-row"><span id="rank-label">C3 progress</span><div class="bar"><i id="progress"></i></div><span id="next-rank">Next C2</span></div>
+    </div>
+    <div class="rank"><img id="rank-image" alt=""><strong id="rank">C3</strong><small id="score">— RP</small></div>
+  </div>
+  <script>
+    const byId = (id) => document.getElementById(id);
+    let state = null;
+    let assetRevision = -1;
+    const signed = (value) => value > 0 ? `+${value}` : value < 0 ? `${value}` : "±0";
+    const elapsed = () => {
+      if (!state || !state.sessionStartedAt) return 0;
+      return Math.max(0, Math.floor(Date.now() / 1000) - state.sessionStartedAt);
+    };
+    const updateTimer = () => {
+      const total = elapsed();
+      const hours = String(Math.floor(total / 3600)).padStart(2,"0");
+      const minutes = String(Math.floor(total % 3600 / 60)).padStart(2,"0");
+      const seconds = String(total % 60).padStart(2,"0");
+      byId("timer").textContent = `${hours}:${minutes}:${seconds}`;
+    };
+    const render = (next) => {
+      state = next;
+      document.body.classList.toggle("is-hidden", !next.enabled);
+      byId("player").textContent = (next.nickname || "PLAYER").toUpperCase();
+      byId("character").textContent = next.characterName || "Fighter";
+      byId("role").textContent = next.role || "Role";
+      byId("role").className = `role ${next.role || "tank"}`;
+      byId("record").textContent = `${next.wins || 0}W–${next.losses || 0}L`;
+      byId("rp").textContent = signed(next.rpDelta || 0);
+      byId("rp").className = next.rpDelta > 0 ? "positive" : next.rpDelta < 0 ? "negative" : "";
+      byId("rank").textContent = next.rank || "—";
+      byId("score").textContent = Number.isFinite(next.rankScore) ? `${next.rankScore.toLocaleString()} RP` : "TRACKER RP";
+      byId("rank-label").textContent = `${next.rank || "Rank"} progress`;
+      byId("next-rank").textContent = next.nextRank ? `Next ${next.nextRank}` : "Top division";
+      byId("progress").style.width = `${Math.max(0, Math.min(100, (next.rankProgress || 0) * 100))}%`;
+      if (next.assetRevision !== assetRevision) {
+        assetRevision = next.assetRevision;
+        byId("fighter").src = `/assets/character.png?v=${assetRevision}`;
+        byId("rank-image").src = `/assets/rank.png?v=${assetRevision}`;
+      }
+      updateTimer();
+    };
+    const refresh = async () => {
+      try {
+        const response = await fetch(`/api/state?t=${Date.now()}`, { cache: "no-store" });
+        if (response.ok) render(await response.json());
+      } catch (_) { document.body.classList.add("is-hidden"); }
+    };
+    setInterval(updateTimer, 1000);
+    setInterval(refresh, 750);
+    refresh();
+  </script>
+</body>
+</html>

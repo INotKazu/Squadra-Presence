@@ -7,6 +7,7 @@ import {
   Gamepad2,
   History,
   Layers3,
+  MonitorUp,
   Radio,
   RefreshCw,
   Settings,
@@ -21,6 +22,7 @@ import { BuildsWorkspace } from "./components/BuildsWorkspace";
 import { HistoryWorkspace } from "./components/HistoryWorkspace";
 import { MobileNav, MobileProfileCard } from "./components/MobileCompanion";
 import type { MobileWorkspace } from "./components/MobileCompanion";
+import { OverlayWorkspace } from "./components/OverlayWorkspace";
 import { RankPicker } from "./components/RankPicker";
 import { RankProgress } from "./components/RankProgress";
 import { RoleIcon } from "./components/RoleIcon";
@@ -40,19 +42,22 @@ import {
   fetchTrackerProfile,
   getDiscordStatus,
   getLaunchContext,
+  getOverlayStatus,
   installPendingUpdate,
   isTauri,
   setDiscordPresence,
   setLaunchAtLogin,
+  updateOverlayAssets,
+  updateOverlayState,
 } from "./lib/bridge";
 import { buildPresence, deriveSelection, isSelectableRank } from "./lib/presence";
-import { detectRuntimePlatform, isMobilePlatform } from "./lib/platform";
+import { detectRuntimePlatform, isMobilePlatform, supportsObsOverlay } from "./lib/platform";
 import { loadRankGainHistory, recordRankObservation } from "./lib/progress";
-import { rankAssetPath, roleLabel } from "./lib/ranks";
+import { nextRankCode, rankAssetPath, roleLabel } from "./lib/ranks";
 import { STAR_COLLECTION_MAX_LEVEL } from "./lib/starCollection";
 import { loadSettings, saveSettings } from "./lib/storage";
 import { formatRelativeTime, normalizeTrackerResponse } from "./lib/tracker";
-import type { AppSettings, DiscordStatus, PlayerJournal, PlayerProfile, ProcessStatus, RankCode, RoleGainHistory, RoleId, UpdateMetadata } from "./types";
+import type { AppSettings, DiscordStatus, OverlayServerStatus, OverlaySnapshot, PlayerJournal, PlayerProfile, ProcessStatus, RankCode, RoleGainHistory, RoleId, UpdateMetadata } from "./types";
 
 const PROCESS_INTERVAL_MS = 5_000;
 const TRACKER_INTERVAL_MS = 120_000;
@@ -62,6 +67,7 @@ const TRACKER_MAX_BACKOFF_MS = 30 * 60_000;
 function App() {
   const runtimePlatform = useMemo(() => detectRuntimePlatform(), []);
   const mobileRuntime = isMobilePlatform(runtimePlatform);
+  const obsOverlayRuntime = supportsObsOverlay(runtimePlatform);
   const [settings, setSettings] = useState<AppSettings>(() => loadSettings());
   const [profile, setProfile] = useState<PlayerProfile | null>(null);
   const [processStatus, setProcessStatus] = useState<ProcessStatus>({ running: false, processName: null });
@@ -74,6 +80,8 @@ function App() {
   const [buildsOpen, setBuildsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [starsOpen, setStarsOpen] = useState(false);
+  const [overlayOpen, setOverlayOpen] = useState(false);
+  const [overlayStatus, setOverlayStatus] = useState<OverlayServerStatus>({ running: !isTauri(), url: "http://127.0.0.1:47612/overlay", error: null });
   const [startupPhase, setStartupPhase] = useState<"checking" | "visible" | "done">("checking");
   const [availableUpdate, setAvailableUpdate] = useState<UpdateMetadata | null>(null);
   const [updateChecking, setUpdateChecking] = useState(false);
@@ -83,6 +91,8 @@ function App() {
   const [playerJournal, setPlayerJournal] = useState<PlayerJournal>(() => loadPlayerJournal(settings.publicId));
   const [rankGainHistory, setRankGainHistory] = useState<RoleGainHistory>(() => loadRankGainHistory());
   const [startedAt, setStartedAt] = useState(() => Math.floor(Date.now() / 1000));
+  const [overlaySessionStartedAt, setOverlaySessionStartedAt] = useState(() => Math.floor(Date.now() / 1000));
+  const [overlaySessionBaselines, setOverlaySessionBaselines] = useState<Record<RoleId, number> | null>(null);
   const [now, setNow] = useState(() => Math.floor(Date.now() / 1000));
   const sentPresenceHash = useRef("");
   const surfacedDiscordError = useRef<string | null>(null);
@@ -99,6 +109,38 @@ function App() {
   const shouldBroadcast = !mobileRuntime && settings.presenceEnabled && (!settings.onlyWhileGameRunning || processStatus.running);
   const elapsedSeconds = Math.max(0, now - startedAt);
   const trackerCooldownSeconds = Math.max(0, Math.ceil((trackerCooldownUntil - Date.now()) / 1000));
+  const overlaySessionMatches = useMemo(() => playerJournal.matches.filter((match) => {
+    if (!match.playedAt) return false;
+    const playedAt = Date.parse(match.playedAt);
+    return Number.isFinite(playedAt) && playedAt >= overlaySessionStartedAt * 1_000;
+  }), [overlaySessionStartedAt, playerJournal.matches]);
+  const overlayWins = overlaySessionMatches.filter((match) => /win|victory/i.test(match.outcome)).length;
+  const overlayLosses = overlaySessionMatches.filter((match) => /loss|defeat/i.test(match.outcome)).length;
+  const reportedOverlayRp = overlaySessionMatches.reduce((total, match) => total + (match.rpChange ?? 0), 0);
+  const hasReportedOverlayRp = overlaySessionMatches.some((match) => match.rpChange !== null);
+  const overlayRankSnapshot = profile?.roleRanks[selection.role] ?? null;
+  const overlayRpDelta = hasReportedOverlayRp
+    ? reportedOverlayRp
+    : overlayRankSnapshot && overlaySessionBaselines
+      ? overlayRankSnapshot.score - overlaySessionBaselines[selection.role]
+      : 0;
+  const overlaySnapshot = useMemo<OverlaySnapshot>(() => ({
+    enabled: settings.overlayEnabled,
+    nickname: profile?.nickname ?? "Player",
+    characterName: selection.characterName,
+    role: selection.role,
+    rank: selection.rank,
+    rankScore: overlayRankSnapshot?.score ?? null,
+    rankFloor: overlayRankSnapshot?.floor ?? null,
+    rankCeiling: overlayRankSnapshot?.ceiling ?? null,
+    rankProgress: overlayRankSnapshot?.progress ?? 0,
+    nextRank: nextRankCode(selection.rank),
+    wins: overlayWins,
+    losses: overlayLosses,
+    rpDelta: overlayRpDelta,
+    sessionStartedAt: overlaySessionStartedAt,
+    updatedAt: Math.floor((syncedAt ?? overlaySessionStartedAt * 1_000) / 1_000),
+  }), [overlayLosses, overlayRankSnapshot, overlayRpDelta, overlaySessionStartedAt, overlayWins, profile?.nickname, selection.characterName, selection.rank, selection.role, settings.overlayEnabled, syncedAt]);
 
   const syncTracker = useCallback(async (quiet = false) => {
     if (!settings.publicId.trim() && isTauri()) {
@@ -202,6 +244,34 @@ function App() {
   useEffect(() => {
     saveSettings(settings);
   }, [settings]);
+
+  useEffect(() => {
+    if (!profile || overlaySessionBaselines) return;
+    setOverlaySessionBaselines({
+      damage: profile.roleRanks.damage.score,
+      tank: profile.roleRanks.tank.score,
+      technical: profile.roleRanks.technical.score,
+    });
+  }, [overlaySessionBaselines, profile]);
+
+  useEffect(() => {
+    if (!obsOverlayRuntime) return;
+    void getOverlayStatus().then(setOverlayStatus).catch((error) => {
+      setOverlayStatus((current) => ({ ...current, running: false, error: error instanceof Error ? error.message : String(error) }));
+    });
+  }, [obsOverlayRuntime]);
+
+  useEffect(() => {
+    if (!obsOverlayRuntime) return;
+    void updateOverlayState(overlaySnapshot).catch((error) => setNotice(error instanceof Error ? error.message : String(error)));
+  }, [obsOverlayRuntime, overlaySnapshot]);
+
+  useEffect(() => {
+    if (!obsOverlayRuntime) return;
+    const revision = Date.now();
+    void updateOverlayAssets(selection.portrait ?? "/assets/app-icon.png", rankAssetPath(selection.rank), revision)
+      .catch((error) => setNotice(error instanceof Error ? error.message : String(error)));
+  }, [obsOverlayRuntime, selection.portrait, selection.rank]);
 
   useEffect(() => {
     document.title = mobileRuntime ? "Squadra Companion" : "Squadra Presence";
@@ -312,11 +382,19 @@ function App() {
     previousGameRunning.current = processStatus.running;
     previousAutoPresence.current = settings.autoPresenceWithGame;
 
-    if (!settings.autoPresenceWithGame) return;
     const gameStateChanged = previouslyRunning !== processStatus.running;
     const autoJustEnabled = !autoWasEnabled;
-    if (!gameStateChanged && !autoJustEnabled) return;
+    if (gameStateChanged && processStatus.running) {
+      const sessionStart = Math.floor(Date.now() / 1000);
+      setOverlaySessionStartedAt(sessionStart);
+      setOverlaySessionBaselines(profile ? {
+        damage: profile.roleRanks.damage.score,
+        tank: profile.roleRanks.tank.score,
+        technical: profile.roleRanks.technical.score,
+      } : null);
+    }
 
+    if (!settings.autoPresenceWithGame || (!gameStateChanged && !autoJustEnabled)) return;
     if (processStatus.running) setStartedAt(Math.floor(Date.now() / 1000));
     setSettings((current) => current.presenceEnabled === processStatus.running
       ? current
@@ -408,6 +486,14 @@ function App() {
       else delete helperAssignments[selection.characterId];
       return { ...current, helperAssignments };
     });
+  };
+  const resetOverlaySession = () => {
+    setOverlaySessionStartedAt(Math.floor(Date.now() / 1000));
+    setOverlaySessionBaselines(profile ? {
+      damage: profile.roleRanks.damage.score,
+      tank: profile.roleRanks.tank.score,
+      technical: profile.roleRanks.technical.score,
+    } : null);
   };
   const currentCharacter = getCharacter(selection.characterId);
   const latest = profile?.latestMatch;
@@ -502,6 +588,11 @@ function App() {
             <button className="secondary-button build-launch-button" type="button" onClick={() => setBuildsOpen(true)}>
               <Layers3 size={16} /> Builds
             </button>
+            {obsOverlayRuntime && (
+              <button className={`secondary-button overlay-launch-button ${settings.overlayEnabled ? "active" : ""}`} type="button" onClick={() => setOverlayOpen(true)}>
+                <MonitorUp size={16} /> OBS
+              </button>
+            )}
             <button className="secondary-button" type="button" onClick={() => void syncTracker()} disabled={syncing || trackerCooldownSeconds > 0}>
               <RefreshCw size={16} className={syncing ? "spin" : ""} />
               {syncing ? "Syncing" : trackerCooldownSeconds ? `Retry in ${Math.ceil(trackerCooldownSeconds / 60)}m` : "Sync now"}
@@ -771,6 +862,17 @@ function App() {
         />
       )}
       {buildsOpen && <BuildsWorkspace initialCharacterId={selection.characterId} onClose={() => setBuildsOpen(false)} />}
+      {overlayOpen && obsOverlayRuntime && (
+        <OverlayWorkspace
+          snapshot={overlaySnapshot}
+          status={overlayStatus}
+          characterPortrait={selection.portrait}
+          rankPortrait={rankAssetPath(selection.rank)}
+          onToggle={(enabled) => updateSettings("overlayEnabled", enabled)}
+          onResetSession={resetOverlaySession}
+          onClose={() => setOverlayOpen(false)}
+        />
+      )}
       {mobileRuntime && <MobileNav active={activeMobileWorkspace} onNavigate={navigateMobile} />}
       {notice && (
         <button className="notice-toast" type="button" onClick={() => setNotice(null)}>

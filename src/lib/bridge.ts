@@ -1,6 +1,6 @@
 import { Channel, invoke } from "@tauri-apps/api/core";
 import { DEMO_TRACKER_RESPONSE } from "./fixture";
-import type { AbilityReference, BuildGuideSource, DiscordStatus, PresencePayload, ProcessStatus, UpdateDownloadEvent, UpdateMetadata } from "../types";
+import type { AbilityReference, BuildGuideSource, DiscordStatus, OverlayServerStatus, OverlaySnapshot, PresencePayload, ProcessStatus, UpdateDownloadEvent, UpdateMetadata } from "../types";
 
 export const isTauri = (): boolean => typeof window !== "undefined" && Boolean(window.__TAURI_INTERNALS__);
 
@@ -96,6 +96,46 @@ export async function setLaunchAtLogin(enabled: boolean): Promise<void> {
 export async function getLaunchContext(): Promise<{ background: boolean }> {
   if (!isTauri()) return { background: false };
   return invoke<{ background: boolean }>("launch_context");
+}
+
+export async function getOverlayStatus(): Promise<OverlayServerStatus> {
+  if (!isTauri()) return { running: true, url: "http://127.0.0.1:47612/overlay", error: null };
+  return invoke<OverlayServerStatus>("overlay_status");
+}
+
+export async function updateOverlayState(snapshot: OverlaySnapshot): Promise<void> {
+  if (!isTauri()) return;
+  await invoke("update_overlay_state", { snapshot });
+}
+
+async function readImageBytes(path: string | undefined, maxSize: number): Promise<number[] | null> {
+  if (!path) return null;
+  const response = await fetch(path);
+  if (!response.ok) throw new Error(`Could not load overlay artwork (${response.status}).`);
+  const source = await response.blob();
+  try {
+    const image = await createImageBitmap(source);
+    const scale = Math.min(1, maxSize / Math.max(image.width, image.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(image.width * scale));
+    canvas.height = Math.max(1, Math.round(image.height * scale));
+    canvas.getContext("2d")?.drawImage(image, 0, 0, canvas.width, canvas.height);
+    image.close();
+    const resized = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+    if (resized) return Array.from(new Uint8Array(await resized.arrayBuffer()));
+  } catch {
+    // Older WebViews can still send the original local asset.
+  }
+  return Array.from(new Uint8Array(await source.arrayBuffer()));
+}
+
+export async function updateOverlayAssets(characterPath: string | undefined, rankPath: string | undefined, revision: number): Promise<void> {
+  if (!isTauri()) return;
+  const [characterImage, rankImage] = await Promise.all([
+    readImageBytes(characterPath, 384),
+    readImageBytes(rankPath, 192),
+  ]);
+  await invoke("update_overlay_assets", { characterImage, rankImage, revision });
 }
 
 export async function checkForUpdate(): Promise<UpdateMetadata | null> {

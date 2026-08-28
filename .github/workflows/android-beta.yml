@@ -3,7 +3,7 @@ name: Build Android beta
 on:
   workflow_dispatch:
   push:
-    branches: [feature/mobile-companion]
+    branches: [feature/mobile-companion, feature/obs-overlay]
     paths:
       - ".github/workflows/android-beta.yml"
       - "package.json"
@@ -85,6 +85,18 @@ jobs:
       - name: Initialize Android project
         run: npx --no-install tauri android init --ci
 
+      - name: Generate Frieza and Goku launcher icons
+        shell: bash
+        run: |
+          convert public/assets/app-icon.png -alpha on "PNG32:$RUNNER_TEMP/squadra-app-icon.png"
+          npx --no-install tauri icon "$RUNNER_TEMP/squadra-app-icon.png"
+
+      - name: Restore stable beta signing key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: squadra-companion-beta-signing-v1
+
       - name: Build installable debug APK
         run: npx --no-install tauri android build --debug --apk
 
@@ -92,6 +104,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: squadra-companion-android-beta
-          path: src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          path: src-tauri/gen/android/app/build/outputs/apk/**/*universal*.apk
           if-no-files-found: error
           retention-days: 14

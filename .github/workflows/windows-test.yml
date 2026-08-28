@@ -1,0 +1,67 @@
+name: Build Windows test installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [feature/obs-overlay]
+    paths:
+      - ".github/workflows/windows-test.yml"
+      - "package.json"
+      - "package-lock.json"
+      - "src/**"
+      - "src-tauri/**"
+      - "public/**"
+      - "index.html"
+      - "vite.config.ts"
+      - "tsconfig*.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-test:
+    name: Test and build unsigned NSIS installer
+    runs-on: windows-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Use stable Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run regression tests
+        run: npm test
+
+      - name: Build production frontend
+        run: npm run build
+
+      - name: Build unsigned Windows installer
+        run: npm run tauri -- build --bundles nsis --config '{"bundle":{"createUpdaterArtifacts":false}}'
+
+      - name: Upload Windows test installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: squadra-presence-obs-test-windows
+          path: src-tauri/target/release/bundle/nsis/*.exe
+          if-no-files-found: error
+          retention-days: 14

@@ -9,6 +9,8 @@ mod app_updates;
 mod discord;
 #[cfg(desktop)]
 mod process;
+#[cfg(desktop)]
+mod overlay;
 
 #[cfg(desktop)]
 use app_updates::{fetch_update, install_update};
@@ -16,6 +18,8 @@ use app_updates::{fetch_update, install_update};
 use discord::{clear_discord_presence, discord_status, set_discord_presence, DiscordService};
 #[cfg(desktop)]
 use process::detect_game_process;
+#[cfg(desktop)]
+use overlay::{overlay_status, update_overlay_assets, update_overlay_state, OverlayService};
 #[cfg(desktop)]
 use tauri::{
     menu::{Menu, MenuItem},
@@ -71,6 +75,7 @@ fn run_app() {
             Some(vec!["--background"]),
         ))
         .manage(DiscordService::new())
+        .manage(OverlayService::start())
         .setup(|app| {
             app_updates::initialize(app)?;
             let open_item = MenuItem::with_id(app, "open", "Open Squadra Presence", true, None::<&str>)?;
@@ -123,7 +128,10 @@ fn run_app() {
             set_launch_at_login,
             launch_context,
             fetch_update,
-            install_update
+            install_update,
+            overlay_status,
+            update_overlay_state,
+            update_overlay_assets
         ])
         .run(tauri::generate_context!())
         .expect("error while running Squadra Presence");

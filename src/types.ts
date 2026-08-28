@@ -218,6 +218,31 @@ export interface AppSettings {
   startupSound: boolean;
   autoCheckUpdates: boolean;
   skippedUpdateVersion: string | null;
+  overlayEnabled: boolean;
+}
+
+export interface OverlaySnapshot {
+  enabled: boolean;
+  nickname: string;
+  characterName: string;
+  role: RoleId;
+  rank: string;
+  rankScore: number | null;
+  rankFloor: number | null;
+  rankCeiling: number | null;
+  rankProgress: number;
+  nextRank: string | null;
+  wins: number;
+  losses: number;
+  rpDelta: number;
+  sessionStartedAt: number;
+  updatedAt: number;
+}
+
+export interface OverlayServerStatus {
+  running: boolean;
+  url: string;
+  error: string | null;
 }
 
 export interface StarRewardOverride {

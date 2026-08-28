@@ -17,3 +17,7 @@ export function detectRuntimePlatform(
 export function isMobilePlatform(platform = detectRuntimePlatform()): boolean {
   return platform === "android" || platform === "ios";
 }
+
+export function supportsObsOverlay(platform = detectRuntimePlatform()): boolean {
+  return platform === "desktop";
+}
