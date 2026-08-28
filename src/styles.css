@@ -1542,12 +1542,12 @@ button.build-card-tile { cursor: pointer; }
 .stars-pools > div small { color: #746849; font-size: 6px; font-weight: 900; text-transform: uppercase; }
 .stars-pools > div strong { color: #d9c795; font-size: 9px; }
 .stars-tier-card { position: relative; min-width: 0; border: 1px solid rgba(224, 179, 72, .13); border-radius: 6px; background: rgba(255,255,255,.014); }
-.stars-tier-row { display: grid; min-height: 35px; padding: 3px 4px 3px 8px; grid-template-columns: minmax(0, 1fr) auto 28px; align-items: center; gap: 5px; }
+.stars-tier-row { display: grid; width: 100%; min-height: 35px; padding: 3px 4px 3px 8px; cursor: pointer; grid-template-columns: minmax(0, 1fr) auto 28px; align-items: center; gap: 5px; color: inherit; text-align: left; border: 0; background: transparent; touch-action: manipulation; }
 .stars-tier-row > span { color: #e1c77f; font-size: 8px; font-weight: 900; text-transform: uppercase; }
 .stars-tier-row > b { color: #6f7780; font-size: 6px; text-transform: uppercase; white-space: nowrap; }
-.stars-tier-row button { display: grid; width: 28px; height: 28px; padding: 0; cursor: pointer; place-items: center; color: #9c8b60; border: 1px solid rgba(224, 179, 72, .1); border-radius: 5px; background: rgba(217, 168, 54, .035); touch-action: manipulation; }
-.stars-tier-row button svg { width: 13px; transition: transform .16s ease; }
-.stars-tier-card.expanded .stars-tier-row button svg { transform: rotate(180deg); }
+.stars-tier-row > i { display: grid; width: 28px; height: 28px; place-items: center; color: #9c8b60; border: 1px solid rgba(224, 179, 72, .1); border-radius: 5px; background: rgba(217, 168, 54, .035); }
+.stars-tier-row > i svg { width: 13px; transition: transform .16s ease; }
+.stars-tier-card.expanded .stars-tier-row > i svg { transform: rotate(180deg); }
 .stars-tier-card p { position: absolute; z-index: 4; top: 31px; left: 0; width: min(390px,55vw); margin: 0; padding: 10px; color: #aeb4bb; font-size: 7px; line-height: 1.7; border: 1px solid rgba(228, 183, 76, .22); border-radius: 6px; background: #10151c; box-shadow: 0 12px 34px rgba(0,0,0,.48); }
 .stars-tier-card:nth-of-type(n+3) p { right: 0; left: auto; }
 .stars-filter { display: flex; gap: 6px; padding: 9px 20px; border-bottom: 1px solid var(--line); }
@@ -1743,6 +1743,13 @@ button.build-card-tile { cursor: pointer; }
 
   body { overflow: hidden; }
   button { -webkit-tap-highlight-color: transparent; }
+
+  /* Android WebView makes native scrollbar gutters tappable. Hide those gutters
+     on the mobile shell so edge taps cannot jump Journal, Builds, or Stars. */
+  .app-shell--mobile,
+  .app-shell--mobile * { scrollbar-width: none; }
+  .app-shell--mobile::-webkit-scrollbar,
+  .app-shell--mobile *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 
   .app-shell {
     display: block;
@@ -2002,7 +2009,7 @@ button.build-card-tile { cursor: pointer; }
   .stars-view-unlocks .stars-tier-row { min-height: 40px; padding: 3px 4px 3px 10px; grid-template-columns: minmax(0, 1fr) auto 34px; }
   .stars-view-unlocks .stars-tier-row > span { font-size: 9px; }
   .stars-view-unlocks .stars-tier-row > b { font-size: 7px; }
-  .stars-view-unlocks .stars-tier-row button { width: 34px; height: 34px; }
+  .stars-view-unlocks .stars-tier-row > i { width: 34px; height: 34px; }
   .stars-view-unlocks .stars-tier-card p,
   .stars-view-unlocks .stars-tier-card:nth-of-type(n+3) p {
     position: static;

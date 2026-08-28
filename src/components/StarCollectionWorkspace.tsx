@@ -131,19 +131,18 @@ export function StarCollectionWorkspace({
             const panelId = `stars-tier-${tier.toLowerCase()}-fighters`;
             return (
               <article key={tier} className={`stars-tier-card tier-${tier.toLowerCase()} ${expanded ? "expanded" : ""}`}>
-                <div className="stars-tier-row">
+                <button
+                  type="button"
+                  className="stars-tier-row"
+                  aria-label={`${expanded ? "Hide" : "Show"} Tier ${tier} fighters`}
+                  aria-expanded={expanded}
+                  aria-controls={panelId}
+                  onClick={() => setExpandedTier(expanded ? null : tier)}
+                >
                   <span>Tier {tier}</span>
                   <b>{HERO_UNLOCK_POOLS[tier].length} fighters</b>
-                  <button
-                    type="button"
-                    aria-label={`${expanded ? "Hide" : "Show"} Tier ${tier} fighters`}
-                    aria-expanded={expanded}
-                    aria-controls={panelId}
-                    onClick={() => setExpandedTier(expanded ? null : tier)}
-                  >
-                    <ChevronDown />
-                  </button>
-                </div>
+                  <i aria-hidden="true"><ChevronDown /></i>
+                </button>
                 {expanded && <p id={panelId}>{HERO_UNLOCK_POOLS[tier].join(" • ")}</p>}
               </article>
             );
