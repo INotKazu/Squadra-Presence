@@ -9,7 +9,7 @@
     "db:create": "wrangler d1 create squadra-cloud-vault --binding DB --update-config",
     "db:local": "wrangler d1 execute squadra-cloud-vault --local --file=schema.sql",
     "db:remote": "wrangler d1 execute squadra-cloud-vault --remote --file=schema.sql",
-    "test": "vitest run test",
+    "test": "vitest run --config vitest.config.ts test",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
