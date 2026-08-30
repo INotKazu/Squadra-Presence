@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BookOpen,
+  CalendarDays,
   Check,
   CopyPlus,
   Crown,
@@ -22,7 +23,7 @@ import {
 import { fetchBuildGuide, fetchHeroAbilities } from "../lib/bridge";
 import { createBuildId, cacheAbilities, loadCachedAbilities, loadSavedBuilds, saveSavedBuilds } from "../lib/buildLibrary";
 import { decodeBuildShare, encodeBuildShare } from "../lib/buildShare";
-import { getCard, getCardsForSlot } from "../lib/cards";
+import { getCard, getCardsForSlot, isCurrentBuild, isCurrentCard } from "../lib/cards";
 import { CHARACTERS, getCharacter } from "../lib/characters";
 import { getHelper, getHelpersForRole } from "../lib/helpers";
 import { cacheBuildGuide, loadCachedBuildGuide, parseBuildGuideHtml } from "../lib/guide";
@@ -31,13 +32,14 @@ import { getCharacterByHeroId, getHeroReferenceId, getRecommendedBuild } from ".
 import { roleLabel } from "../lib/ranks";
 import type { AbilityReference, CardDefinition, CuratedBuild, ExpandedBuildGuide, SavedBuild } from "../types";
 import { RoleIcon } from "./RoleIcon";
+import { SeasonSevenHub } from "./SeasonSevenHub";
 
 interface BuildsWorkspaceProps {
   initialCharacterId: string;
   onClose: () => void;
 }
 
-type WorkspaceTab = "builds" | "abilities";
+type WorkspaceTab = "builds" | "abilities" | "season7";
 type ShareMode = "share" | "import" | null;
 
 function CardTile({ card, selected = false, compact = false, onClick }: {
@@ -50,10 +52,13 @@ function CardTile({ card, selected = false, compact = false, onClick }: {
     <>
       <img src={card.portrait} alt="" />
       <span>{card.name}</span>
+      {card.introducedSeason === "7" && <em className="card-season-chip card-season-chip--new">New S7</em>}
+      {!isCurrentCard(card) && <em className="card-season-chip card-season-chip--legacy">S6 archive</em>}
       {selected && <Check className="card-selected-check" size={15} />}
       <div className="card-effect-tooltip" role="tooltip">
         <strong>{card.name}</strong>
-        <small>Card {card.slot} • {card.family}</small>
+        <small>Card {card.slot} • {card.family} • {isCurrentCard(card) ? "Season 7" : "Retired after Season 6"}</small>
+        {card.trigger && <p><b>Trigger:</b> {card.trigger}</p>}
         <p>{card.effect}</p>
       </div>
     </>
@@ -62,26 +67,28 @@ function CardTile({ card, selected = false, compact = false, onClick }: {
   return onClick ? (
     <button
       type="button"
-      className={`build-card-tile build-card-tile--${card.family} ${selected ? "selected" : ""} ${compact ? "compact" : ""}`}
+      className={`build-card-tile build-card-tile--${card.family} ${!isCurrentCard(card) ? "legacy" : ""} ${selected ? "selected" : ""} ${compact ? "compact" : ""}`}
       onClick={onClick}
       aria-label={`${selected ? "Selected" : "Select"} ${card.name}: ${card.effect}`}
     >
       {content}
     </button>
   ) : (
-    <div className={`build-card-tile build-card-tile--${card.family} ${compact ? "compact" : ""}`} tabIndex={0}>
+    <div className={`build-card-tile build-card-tile--${card.family} ${!isCurrentCard(card) ? "legacy" : ""} ${compact ? "compact" : ""}`} tabIndex={0}>
       {content}
     </div>
   );
 }
 
 function BuildCards({ cardIds, compact = false }: { cardIds: string[]; compact?: boolean }) {
+  const current = isCurrentBuild(cardIds);
   return (
-    <div className={`build-card-row ${compact ? "compact" : ""}`}>
+    <div className={`build-card-row ${compact ? "compact" : ""} ${current ? "" : "build-card-row--legacy"}`}>
       {cardIds.map((cardId) => {
         const card = getCard(cardId);
         return card ? <CardTile key={card.id} card={card} compact={compact} /> : null;
       })}
+      {!current && <small className="legacy-build-flag">Season 6 archive</small>}
     </div>
   );
 }
@@ -322,7 +329,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
       name: "Recommended S6 copy",
       cardIds: [...recommended.cardIds],
       helperId: recommended.helperId,
-      notes: "Copied from the DBGS Builds Season 6 recommendation.",
+      notes: "Archived from the DBGS Builds Season 6 recommendation.",
       createdAt: timestamp,
       updatedAt: timestamp,
     });
@@ -478,13 +485,16 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
             <button type="button" className={activeTab === "abilities" ? "active" : ""} onClick={() => setActiveTab("abilities")}>
               <BookOpen size={16} /> Skills & passives
             </button>
+            <button type="button" className={activeTab === "season7" ? "active" : ""} onClick={() => setActiveTab("season7")}>
+              <CalendarDays size={16} /> Season 7
+            </button>
           </div>
 
           {activeTab === "builds" ? (
             <div className="builds-content" ref={contentScrollRef}>
               <section className="recommended-build build-surface">
                 <div className="build-section-heading">
-                  <div><span className="eyebrow">Season 6 reference</span><h3>Recommended build</h3></div>
+                  <div><span className="eyebrow">Archived Season 6 reference</span><h3>Recommended build</h3></div>
                   {recommended && <div className="build-heading-actions">
                     <button type="button" className="build-action secondary" onClick={() => void loadExpandedGuide(Boolean(currentGuide))} disabled={guideLoading}>
                       <BookOpen size={15} /> {guideLoading ? "Loading" : currentGuide ? "Refresh guide" : "Full guide"}
@@ -499,7 +509,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
                       {recommendedHelper?.portrait && <img src={recommendedHelper.portrait} alt="" />}
                       <span><small>Recommended helper</small><strong>{recommendedHelper?.name ?? "No helper listed"}</strong></span>
                       <i />
-                      <span><small>Source</small><strong>DBGS Builds • S6 2026</strong></span>
+                      <span><small>Status</small><strong>{isCurrentBuild(recommended.cardIds) ? "Still legal in S7" : "Contains rotated cards"}</strong></span>
                     </div>
                   </>
                 ) : <div className="build-empty">No recommended build is published for this fighter yet.</div>}
@@ -550,7 +560,7 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
                       return (
                         <article className="kazuma-pick" key={build.id}>
                           <div className="kazuma-pick-copy">
-                            <span>Personal recommendation</span>
+                            <span>{isCurrentBuild(build.cardIds) ? "Season 7 compatible pick" : "Season 6 archived pick"}</span>
                             <strong>{build.name}</strong>
                             <p>{build.notes}</p>
                             <blockquote><MessageCircleMore size={14} /><span><small>Why Kazuma picks it</small>{build.why}</span></blockquote>
@@ -635,9 +645,9 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
                 </section>
               )}
 
-              <p className="build-source-note">Card effects are concise Season 6 summaries. Hover or focus any card to read its effect. Recommendations are attributed to DBGS Builds and may change after balance updates.</p>
+              <p className="build-source-note">The editor uses the announced Season 7 card pool. Rotated Season 6 cards remain visible only in archived recommendations and existing saved builds so updates never destroy your library.</p>
             </div>
-          ) : (
+          ) : activeTab === "abilities" ? (
             <div className="abilities-content" ref={contentScrollRef}>
               <div className="ability-heading build-surface">
                 <div><span className="eyebrow">Fighter reference</span><h3>{character.name} skills & passives</h3><p>Loaded from the current DBGS character reference and cached locally for seven days.</p></div>
@@ -662,6 +672,8 @@ export function BuildsWorkspace({ initialCharacterId, onClose }: BuildsWorkspace
               )}
               <p className="build-source-note">Ability wording is reference information and may differ after a new balance patch; the in-game description remains authoritative.</p>
             </div>
+          ) : (
+            <SeasonSevenHub />
           )}
         </main>
       </div>

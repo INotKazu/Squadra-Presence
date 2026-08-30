@@ -4,6 +4,7 @@ import { exportAppBackup, restoreAppBackup } from "../lib/backup";
 import { CHARACTERS, getCharacter } from "../lib/characters";
 import { roleLabel } from "../lib/ranks";
 import type { AppSettings } from "../types";
+import { CloudLinkPanel } from "./CloudLinkPanel";
 
 interface SettingsPanelProps {
   settings: AppSettings;
@@ -158,6 +159,8 @@ export function SettingsPanel({ settings, mobileRuntime = false, onChange, onSel
             <button type="button" disabled={updateChecking} onClick={() => void onCheckUpdates()}><RefreshCw className={updateChecking ? "spin" : ""} /> {updateChecking ? "Checking" : "Check now"}</button>
           </div>
         )}
+
+        <CloudLinkPanel settings={settings} mobileRuntime={mobileRuntime} onSettingsChange={onChange} />
 
         <div className="settings-backup">
           <div>

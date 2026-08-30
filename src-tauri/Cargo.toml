@@ -1,6 +1,6 @@
 [package]
 name = "squadra-presence"
-version = "0.6.2"
+version = "0.7.0"
 description = "Unofficial Dragon Ball Gekishin Squadra Discord Rich Presence companion"
 authors = ["Kazuma / KazuCorp"]
 repository = "https://github.com/INotKazu/Squadra-Presence"

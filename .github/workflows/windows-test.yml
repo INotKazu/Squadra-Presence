@@ -3,7 +3,7 @@ name: Build Windows test installer
 on:
   workflow_dispatch:
   push:
-    branches: [feature/obs-overlay]
+    branches: [feature/obs-overlay, feature/season-7]
     paths:
       - ".github/workflows/windows-test.yml"
       - "package.json"
@@ -27,6 +27,8 @@ jobs:
     name: Test and build unsigned NSIS installer
     runs-on: windows-latest
     timeout-minutes: 45
+    env:
+      VITE_CLOUD_SYNC_URL: ${{ vars.CLOUD_SYNC_URL }}
 
     steps:
       - name: Check out source

@@ -1,5 +1,5 @@
 import { getCharacter } from "./characters";
-import { CURRENT_SEASON_ID, seasonIdForTimestamp } from "./seasons";
+import { seasonIdForTimestamp } from "./seasons";
 import type {
   JournalStore,
   MatchJournalEntry,
@@ -145,7 +145,7 @@ export function roleRankObservations(ranks: RankJournalEntry[], role: RoleId): R
 
 function rankEntry(profile: PlayerProfile, observedAt: number): RankJournalEntry {
   return {
-    seasonId: CURRENT_SEASON_ID,
+    seasonId: seasonIdForTimestamp(observedAt),
     observedAt,
     matchPlayedAt: profile.latestMatch?.playedAt || null,
     scores: {

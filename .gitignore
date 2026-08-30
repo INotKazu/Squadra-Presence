@@ -4,5 +4,7 @@ src-tauri/target/
 *.log
 *.key
 *.key.pub
+.env*.local
+.wrangler/
 release-output/
 .DS_Store

@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.7.0
+
+- Added the announced Season 7 Divine Combo Card rotation: 12 new cards, six returning cards, exact reveal triggers/effects, and current build-slot filtering.
+- Preserved all 12 rotated Season 6 cards as read-only archive data so existing saved builds, Kazuma's Picks, backups, and portable share codes never disappear.
+- Added a Season 7 operations board on both PC and Android with the September 9 Super Gogeta launch, September 29 and October 13 hero slots, anniversary campaigns, and card-pool status.
+- Added the official September 9 Season 7 journal boundary while keeping Season 6 history independently accessible.
+- Added end-to-end encrypted PC/Android cloud linking through an optional Cloudflare Worker + D1 vault, including revision conflicts and strict portable-data boundaries.
+- Added the PC-only OBS browser overlay and kept Discord/OBS controls out of the Android companion.
+- Added the Android companion, Frieza-and-Goku launcher branding, refreshed mobile intro, nested Hero tiers, stable touch scrolling, and the corrected Star Overview layout.
+
 ## 0.6.2
 
 - Extended the manual KazuCorp cold-launch sequence from 3.2 to 4 seconds while preserving hidden-startup and tray-restore skipping.

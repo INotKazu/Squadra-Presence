@@ -10,6 +10,7 @@ The mobile target shares the same React, tracker, journal, Star Collection, buil
 - Fighter builds, card library, Helpers, abilities, expanded guides, and Kazuma's Picks
 - Manual fighter/rank controls and the four-second KazuCorp intro
 - Backup restore from desktop and mobile backup sharing/download
+- Optional end-to-end encrypted cloud linking with the Windows app
 - A phone-specific dashboard, touch targets, full-screen workspaces, and safe-area navigation
 
 ## Deliberately excluded on mobile

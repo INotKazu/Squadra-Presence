@@ -8,6 +8,7 @@ describe("desktop content security policy", () => {
     const csp = String(config.app?.security?.csp ?? "");
 
     expect(csp).toMatch(/connect-src[^;]*'self'/);
+    expect(csp).toContain("https://*.workers.dev");
     expect(csp).toContain("frame-src http://127.0.0.1:47612");
   });
 });

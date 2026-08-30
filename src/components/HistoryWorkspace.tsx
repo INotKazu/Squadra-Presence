@@ -3,7 +3,7 @@ import { Activity, BarChart3, Clock3, Crosshair, Gamepad2, Medal, Shield, Sparkl
 import { getCharacter } from "../lib/characters";
 import { roleRankObservations } from "../lib/journal";
 import { matchOutcomeKind, matchWinRate, performanceMatches } from "../lib/outcomes";
-import { CURRENT_SEASON_ID, journalForSeason, journalSeasonIds, seasonLabel } from "../lib/seasons";
+import { activeSeasonAt, journalForSeason, journalSeasonIds, seasonLabel } from "../lib/seasons";
 import { formatDuration, formatRelativeTime } from "../lib/tracker";
 import { roleLabel } from "../lib/ranks";
 import type { MatchJournalEntry, PlayerJournal, RankJournalEntry, RoleId } from "../types";
@@ -65,8 +65,9 @@ function RankTrend({ role, ranks }: { role: RoleId; ranks: RankJournalEntry[] })
 }
 
 export function HistoryWorkspace({ journal, nickname, onClose }: HistoryWorkspaceProps) {
+  const currentSeasonId = activeSeasonAt().id;
   const [filter, setFilter] = useState<RoleFilter>("all");
-  const [seasonFilter, setSeasonFilter] = useState(CURRENT_SEASON_ID);
+  const [seasonFilter, setSeasonFilter] = useState(() => activeSeasonAt().id);
   const [selectedMatch, setSelectedMatch] = useState<MatchJournalEntry | null>(null);
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -101,7 +102,7 @@ export function HistoryWorkspace({ journal, nickname, onClose }: HistoryWorkspac
           <span>Season journal</span>
           {seasonIds.map((seasonId) => (
             <button type="button" key={seasonId} className={seasonFilter === seasonId ? "active" : ""} onClick={() => { setSeasonFilter(seasonId); setSelectedMatch(null); }}>
-              {seasonLabel(seasonId)}{seasonId === CURRENT_SEASON_ID && <small>Current</small>}
+              {seasonLabel(seasonId)}{seasonId === currentSeasonId && <small>Current</small>}
             </button>
           ))}
           <button type="button" className={seasonFilter === CAREER_FILTER ? "active" : ""} onClick={() => { setSeasonFilter(CAREER_FILTER); setSelectedMatch(null); }}>Career</button>

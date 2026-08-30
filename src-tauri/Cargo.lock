@@ -3689,7 +3689,7 @@ dependencies = [
 
 [[package]]
 name = "squadra-presence"
-version = "0.6.2"
+version = "0.7.0"
 dependencies = [
  "discord-rich-presence",
  "reqwest 0.12.28",

@@ -72,9 +72,12 @@ export interface CardDefinition {
   id: string;
   name: string;
   effect: string;
+  trigger: string | null;
   family: "offense" | "defense" | "utility";
   slot: 1 | 2 | 3;
   portrait: string;
+  introducedSeason: string;
+  retiredAfterSeason: string | null;
 }
 
 export interface SavedBuild {

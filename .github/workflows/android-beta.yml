@@ -3,12 +3,13 @@ name: Build Android beta
 on:
   workflow_dispatch:
   push:
-    branches: [feature/mobile-companion, feature/obs-overlay]
+    branches: [feature/mobile-companion, feature/obs-overlay, feature/season-7]
     paths:
       - ".github/workflows/android-beta.yml"
       - "package.json"
       - "package-lock.json"
       - "src/**"
+      - "public/**"
       - "src-tauri/**"
       - "scripts/patch-android-webview.mjs"
       - "index.html"
@@ -27,6 +28,8 @@ jobs:
     name: Test and build debug APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      VITE_CLOUD_SYNC_URL: ${{ vars.CLOUD_SYNC_URL }}
 
     steps:
       - name: Check out source

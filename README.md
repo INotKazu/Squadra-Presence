@@ -216,6 +216,7 @@ Please keep the polling interval conservative and obtain permission from the DBG
 - Click a completed match to open its full local detail drawer. MVP and per-match RP are shown only when explicitly supplied by the public tracker.
 - Open **Settings → Backup and restore** to export or restore settings, custom builds, Helper choices, learned RP gain samples, and local journals.
 - Backup format v3 includes every season journal alongside local Kazuma's Pick edits and Star reward notes; v1 and v2 backups remain importable. Restoring a backup replaces those local collections. A backup contains the public UUID, so it should not be posted publicly.
+- **Settings → Encrypted cloud link** can pair PC and Android through the optional end-to-end encrypted Cloudflare vault. The private link code never enters the database, PC-only behavior is not synchronized, and revision conflicts require an explicit choice. See [CLOUD_SYNC.md](CLOUD_SYNC.md) for deployment and pairing.
 
 ## Star Collection and player profile
 
@@ -271,6 +272,8 @@ The TypeScript/Vite production build and automated mapping tests can run on any 
 - `src/lib/progress.ts` — RP progress and learned win-gain estimates
 - `src/lib/buildShare.ts` — private-data-free portable build codes
 - `src/lib/backup.ts` and `src/lib/journal.ts` — local export/restore and per-player history
+- `src/lib/cloudCrypto.ts`, `src/lib/cloudPayload.ts`, and `src/lib/cloudLink.ts` — client-side encryption, portable sync boundary, and conflict-safe vault client
+- `cloud-worker/` — optional Cloudflare Worker + D1 encrypted vault backend
 - `src-tauri/src/discord.rs` — persistent Discord IPC worker
 - `src-tauri/src/tracker.rs` — public tracker request, response sanitization, and ability-reference fetcher
 - `src-tauri/src/process.rs` — safe process-name detection
