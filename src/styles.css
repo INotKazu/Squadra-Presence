@@ -955,6 +955,18 @@ button:disabled { cursor: not-allowed; opacity: .48; }
 .switch::after { position: absolute; width: 13px; height: 13px; top: 3px; left: 3px; content: ""; border-radius: 50%; background: #9199a5; transition: transform .18s ease, background .18s ease; }
 .toggle-row input:checked + .switch { background: #285e91; }
 .toggle-row input:checked + .switch::after { transform: translateX(15px); background: #6dc5ff; }
+.settings-music-volume { display: grid; grid-template-columns: 17px minmax(0, 1fr) 17px 34px; align-items: center; gap: 9px; min-height: 53px; padding: 9px 13px 11px; border-top: 1px solid var(--line); transition: opacity .18s ease; }
+.settings-music-volume + .toggle-row { border-top: 1px solid var(--line); }
+.settings-music-volume.is-disabled { opacity: .42; }
+.settings-music-volume > svg { width: 16px; color: #be9f56; }
+.settings-music-volume > label { display: grid; gap: 7px; min-width: 0; }
+.settings-music-volume > label > span { color: #9ca5b1; font-size: 8px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+.settings-panel .settings-music-volume input[type="range"] { width: 100%; height: 4px; padding: 0; cursor: pointer; appearance: none; border: 0; border-radius: 999px; outline: none; background: linear-gradient(90deg, rgba(232,188,82,.62), rgba(86,174,225,.58)); accent-color: #e6bd59; }
+.settings-panel .settings-music-volume input[type="range"]:disabled { cursor: default; }
+.settings-panel .settings-music-volume input[type="range"]::-webkit-slider-thumb { width: 14px; height: 14px; appearance: none; border: 2px solid #10141b; border-radius: 50%; background: #ebc968; box-shadow: 0 0 0 1px rgba(235,201,104,.34); }
+.settings-panel .settings-music-volume input[type="range"]::-moz-range-thumb { width: 12px; height: 12px; border: 2px solid #10141b; border-radius: 50%; background: #ebc968; box-shadow: 0 0 0 1px rgba(235,201,104,.34); }
+.settings-music-volume output { color: #e8cc7e; font: 800 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace; text-align: right; }
+audio[data-background-music] { display: none; }
 .settings-note { padding: 12px; color: #92896f; font-size: 9px; line-height: 1.5; border: 1px solid rgba(202,163,76,.2); border-radius: 6px; background: rgba(177,126,31,.06); }
 .settings-done { width: 100%; margin-top: 18px; }
 
@@ -1945,6 +1957,7 @@ button.build-card-tile { cursor: pointer; }
   .settings-two-column { grid-template-columns: 1fr; gap: 0; }
   .settings-panel > label, .settings-two-column label { margin-bottom: 14px; }
   .toggle-row { min-height: 68px; }
+  .settings-music-volume { min-height: 58px; }
   .settings-panel small { font-size: 9px; }
   .cloud-link-panel { padding: 12px; }
   .cloud-link-heading { grid-template-columns: 34px minmax(0, 1fr); }

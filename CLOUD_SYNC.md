@@ -71,6 +71,7 @@ Cloud sync includes:
 - Saved builds and Kazuma's Pick overrides
 - Rank-gain samples and every saved season journal
 - Startup animation and chime preferences
+- Background-music toggle and volume preference
 
 It deliberately excludes:
 

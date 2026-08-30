@@ -20,6 +20,8 @@ function cloudPayload(exportedAt: string): CloudBackupPayload {
       role: "damage",
       manualRank: "A4",
       starCollectionLevel: 77,
+      backgroundMusicEnabled: true,
+      backgroundMusicVolume: 0.61,
     }),
     savedBuilds: [],
     rankGainHistory: { damage: [], tank: [], technical: [], lastScores: null, lastMatchPlayedAt: null },
@@ -45,6 +47,8 @@ describe("portable cloud payload", () => {
     expect(merged.characterRankingId).toBe("2735236247");
     expect(merged.manualRank).toBe("A4");
     expect(merged.starCollectionLevel).toBe(77);
+    expect(merged.backgroundMusicEnabled).toBe(true);
+    expect(merged.backgroundMusicVolume).toBe(0.61);
     expect(merged.presenceEnabled).toBe(true);
     expect(merged.launchAtLogin).toBe(true);
     expect(merged.onlyWhileGameRunning).toBe(false);

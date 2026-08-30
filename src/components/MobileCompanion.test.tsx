@@ -44,6 +44,8 @@ describe("mobile companion surfaces", () => {
 
     expect(markup).toContain("Squadra Companion");
     expect(markup).toContain("Encrypted cloud link");
+    expect(markup).toContain("Background music");
+    expect(markup).toContain("Background music volume");
     expect(markup).toContain("Share backup");
     expect(markup).toContain("while the companion is open");
     expect(markup).not.toContain("Game process hints");

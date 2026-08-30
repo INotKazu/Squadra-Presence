@@ -6,6 +6,14 @@ describe("settings sanitization", () => {
     expect(DEFAULT_SETTINGS.publicId).toBe("");
     expect(DEFAULT_SETTINGS.launchAtLogin).toBe(false);
     expect(DEFAULT_SETTINGS.starCollectionMaxLevel).toBe(255);
+    expect(DEFAULT_SETTINGS.backgroundMusicEnabled).toBe(false);
+    expect(DEFAULT_SETTINGS.backgroundMusicVolume).toBe(0.22);
+  });
+
+  it("clamps saved background music volume to the supported range", () => {
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, backgroundMusicVolume: 4 }).backgroundMusicVolume).toBe(1);
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, backgroundMusicVolume: -2 }).backgroundMusicVolume).toBe(0);
+    expect(sanitizeSettings({ ...DEFAULT_SETTINGS, backgroundMusicVolume: Number.NaN }).backgroundMusicVolume).toBe(0.22);
   });
 
   it("migrates old Star Collection settings to the current 255 cap", () => {

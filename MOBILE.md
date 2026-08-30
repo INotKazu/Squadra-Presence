@@ -9,6 +9,7 @@ The mobile target shares the same React, tracker, journal, Star Collection, buil
 - Star Collection Levels 1–255, Total Votes, Zeni, player rank, and unlock pools
 - Fighter builds, card library, Helpers, abilities, expanded guides, and Kazuma's Picks
 - Manual fighter/rank controls and the four-second KazuCorp intro
+- Optional original Evening Link background music with a remembered volume slider and automatic pause while the app is hidden
 - Backup restore from desktop and mobile backup sharing/download
 - Optional end-to-end encrypted cloud linking with the Windows app
 - A phone-specific dashboard, touch targets, full-screen workspaces, and safe-area navigation
@@ -24,7 +25,7 @@ Those services remain unchanged in Windows builds. Mobile updates will use a new
 
 ## Fastest beta build: GitHub Actions
 
-Every push to `feature/mobile-companion` runs **Build Android beta** on GitHub. Open the completed workflow run, download the `squadra-companion-android-beta` artifact, unzip it, and copy the APK to the Android phone. This does not publish a GitHub Release or affect desktop users.
+Every push to `feature/mobile-companion`, `feature/obs-overlay`, or `feature/season-7` runs **Build Android beta** on GitHub. Open the completed workflow run, download the `squadra-companion-android-beta` artifact, unzip it, and copy the APK to the Android phone. This does not publish a GitHub Release or affect desktop users.
 
 ## Optional local Android build on Windows
 

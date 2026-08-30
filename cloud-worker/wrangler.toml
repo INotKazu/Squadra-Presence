@@ -1,3 +1,8 @@
 name = "squadra-cloud-vault"
 main = "src/index.ts"
 compatibility_date = "2026-08-30"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "squadra-cloud-vault"
+database_id = "9c67a29e-2d76-4da4-bef4-935d438dc700"

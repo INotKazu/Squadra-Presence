@@ -18,6 +18,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { DiscordPreview } from "./components/DiscordPreview";
+import { BackgroundMusic } from "./components/BackgroundMusic";
 import { BuildsWorkspace } from "./components/BuildsWorkspace";
 import { HistoryWorkspace } from "./components/HistoryWorkspace";
 import { MobileNav, MobileProfileCard } from "./components/MobileCompanion";
@@ -530,6 +531,11 @@ function App() {
 
   return (
     <div className={`app-shell ${mobileRuntime ? "app-shell--mobile" : ""}`}>
+      <BackgroundMusic
+        enabled={settings.backgroundMusicEnabled}
+        volume={settings.backgroundMusicVolume}
+        mobileRuntime={mobileRuntime}
+      />
       {!mobileRuntime && <Sidebar selection={selection} profile={profile} rankGainHistory={rankGainHistory} elapsedSeconds={elapsedSeconds} />}
 
       <main className="app-main">

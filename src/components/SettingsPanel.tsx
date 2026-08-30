@@ -1,9 +1,10 @@
 import { useRef, useState } from "react";
-import { Download, RefreshCw, Share2, Upload, X } from "lucide-react";
+import { Download, Music2, RefreshCw, Share2, Upload, Volume2, X } from "lucide-react";
 import { exportAppBackup, restoreAppBackup } from "../lib/backup";
 import { CHARACTERS, getCharacter } from "../lib/characters";
 import { roleLabel } from "../lib/ranks";
 import type { AppSettings } from "../types";
+import { requestBackgroundMusicStart } from "./BackgroundMusic";
 import { CloudLinkPanel } from "./CloudLinkPanel";
 
 interface SettingsPanelProps {
@@ -21,6 +22,10 @@ export function SettingsPanel({ settings, mobileRuntime = false, onChange, onSel
   const [backupMessage, setBackupMessage] = useState<string | null>(null);
   const update = <K extends keyof AppSettings>(key: K, value: AppSettings[K]) =>
     onChange({ ...settings, [key]: value });
+  const setBackgroundMusicEnabled = (enabled: boolean) => {
+    update("backgroundMusicEnabled", enabled);
+    if (enabled) requestBackgroundMusicStart();
+  };
   const selectedCharacter = getCharacter(settings.characterRankingId);
 
   const importBackup = async (file: File | undefined) => {
@@ -144,6 +149,29 @@ export function SettingsPanel({ settings, mobileRuntime = false, onChange, onSel
             <input type="checkbox" checked={settings.startupSound} onChange={(event) => update("startupSound", event.target.checked)} disabled={!settings.startupAnimation} />
             <span className="switch" />
           </label>
+          <label className="toggle-row">
+            <div><strong>Background music</strong><small>Play KazuCorp's original Evening Link ambience. It pauses when the app is hidden{mobileRuntime ? "." : " or you switch to the game/OBS."}</small></div>
+            <input type="checkbox" checked={settings.backgroundMusicEnabled} onChange={(event) => setBackgroundMusicEnabled(event.target.checked)} />
+            <span className="switch" />
+          </label>
+          <div className={`settings-music-volume ${settings.backgroundMusicEnabled ? "" : "is-disabled"}`} aria-disabled={!settings.backgroundMusicEnabled}>
+            <Music2 aria-hidden="true" />
+            <label>
+              <span>Music volume</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value={Math.round(settings.backgroundMusicVolume * 100)}
+                disabled={!settings.backgroundMusicEnabled}
+                aria-label="Background music volume"
+                onChange={(event) => update("backgroundMusicVolume", Number(event.target.value) / 100)}
+              />
+            </label>
+            <Volume2 aria-hidden="true" />
+            <output>{Math.round(settings.backgroundMusicVolume * 100)}%</output>
+          </div>
           {!mobileRuntime && (
             <label className="toggle-row">
               <div><strong>Automatically check for updates</strong><small>Check KazuCorp's signed GitHub releases after startup. Nothing installs until you click Install update.</small></div>

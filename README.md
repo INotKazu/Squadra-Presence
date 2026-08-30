@@ -42,6 +42,7 @@ The interface is styled after the dark Squadra battle-card mockup: a fighter das
 - Explicit MVP badges and a clickable match-detail drawer; MVP is never inferred from combat stats
 - Locally editable Kazuma's Picks with bundled-default reset and backup coverage
 - A four-second KazuCorp Systems cold-launch sequence with an original synthesized chime, skipped during hidden startup and tray restore
+- An optional original **Evening Link** background loop with remembered volume and focus-aware pause, available on both PC and Android
 - Signed one-click updates from `INotKazu/Squadra-Presence` GitHub Releases, with release notes, progress, later, and skip controls
 - A transparent local OBS browser overlay with fighter art, role rank, RP progress, session W–L, net RP, and elapsed time
 - JSON backup and restore for settings, custom builds, Helper choices, learned rank pace, and local history
