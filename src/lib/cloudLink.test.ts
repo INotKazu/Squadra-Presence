@@ -6,6 +6,7 @@ import {
   normalizeCloudEndpoint,
   syncCloudCopy,
   uploadThisDevice,
+  verifyCloudEndpoint,
 } from "./cloudLink";
 import { DEFAULT_SETTINGS } from "./storage";
 
@@ -71,6 +72,24 @@ describe("cloud link configuration", () => {
   it("rejects insecure or unrelated cloud endpoints", () => {
     expect(() => normalizeCloudEndpoint("http://example.com")).toThrow(/HTTPS/i);
     expect(() => normalizeCloudEndpoint("https://example.com")).toThrow(/workers.dev/i);
+  });
+
+  it("verifies the deployed Squadra vault before linking a device", async () => {
+    vi.stubGlobal("window", {
+      setTimeout: globalThis.setTimeout,
+      clearTimeout: globalThis.clearTimeout,
+    });
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({
+      ok: true,
+      service: "squadra-cloud-vault",
+      encryption: "client-side",
+    })));
+    await expect(verifyCloudEndpoint("https://squadra-vault.kazucorp.workers.dev/"))
+      .resolves.toBe("https://squadra-vault.kazucorp.workers.dev");
+
+    vi.stubGlobal("fetch", vi.fn(async () => Response.json({ ok: true })));
+    await expect(verifyCloudEndpoint("https://squadra-vault.kazucorp.workers.dev"))
+      .rejects.toThrow(/not a compatible Squadra cloud vault/i);
   });
 
   it("uploads, pairs a second device, and stops divergent copies", async () => {

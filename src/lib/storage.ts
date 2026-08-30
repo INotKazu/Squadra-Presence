@@ -22,8 +22,6 @@ export const DEFAULT_SETTINGS: AppSettings = {
   starCollectionMaxLevel: STAR_COLLECTION_MAX_LEVEL,
   startupAnimation: true,
   startupSound: true,
-  backgroundMusicEnabled: false,
-  backgroundMusicVolume: 0.22,
   autoCheckUpdates: true,
   skippedUpdateVersion: null,
   overlayEnabled: true,
@@ -68,12 +66,6 @@ export function sanitizeSettings(value: unknown): AppSettings {
     starCollectionMaxLevel: STAR_COLLECTION_MAX_LEVEL,
     startupAnimation: typeof parsed.startupAnimation === "boolean" ? parsed.startupAnimation : DEFAULT_SETTINGS.startupAnimation,
     startupSound: typeof parsed.startupSound === "boolean" ? parsed.startupSound : DEFAULT_SETTINGS.startupSound,
-    backgroundMusicEnabled: typeof parsed.backgroundMusicEnabled === "boolean"
-      ? parsed.backgroundMusicEnabled
-      : DEFAULT_SETTINGS.backgroundMusicEnabled,
-    backgroundMusicVolume: typeof parsed.backgroundMusicVolume === "number" && Number.isFinite(parsed.backgroundMusicVolume)
-      ? Math.max(0, Math.min(1, parsed.backgroundMusicVolume))
-      : DEFAULT_SETTINGS.backgroundMusicVolume,
     autoCheckUpdates: typeof parsed.autoCheckUpdates === "boolean" ? parsed.autoCheckUpdates : DEFAULT_SETTINGS.autoCheckUpdates,
     skippedUpdateVersion: typeof parsed.skippedUpdateVersion === "string" && /^\d+\.\d+\.\d+(?:[-+][\w.-]+)?$/.test(parsed.skippedUpdateVersion)
       ? parsed.skippedUpdateVersion

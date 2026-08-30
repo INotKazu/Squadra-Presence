@@ -24,8 +24,6 @@ export type PortableSettings = Pick<AppSettings,
   | "starCollectionLevel"
   | "startupAnimation"
   | "startupSound"
-  | "backgroundMusicEnabled"
-  | "backgroundMusicVolume"
 >;
 
 export interface CloudBackupPayload {
@@ -51,8 +49,6 @@ const PORTABLE_SETTING_KEYS = [
   "starCollectionLevel",
   "startupAnimation",
   "startupSound",
-  "backgroundMusicEnabled",
-  "backgroundMusicVolume",
 ] as const satisfies readonly (keyof PortableSettings)[];
 
 export function portableSettingsFrom(settings: AppSettings): PortableSettings {

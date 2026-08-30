@@ -1,0 +1,58 @@
+name: Verify cloud vault
+
+on:
+  push:
+    branches: [feature/season-7, main]
+    paths:
+      - ".github/workflows/cloud-vault-test.yml"
+      - "cloud-worker/**"
+      - "src/components/CloudLinkPanel.tsx"
+      - "src/lib/cloudCrypto*"
+      - "src/lib/cloudLink*"
+      - "src/lib/cloudPayload*"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/cloud-vault-test.yml"
+      - "cloud-worker/**"
+      - "src/components/CloudLinkPanel.tsx"
+      - "src/lib/cloudCrypto*"
+      - "src/lib/cloudLink*"
+      - "src/lib/cloudPayload*"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloud-vault-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  worker:
+    name: Test and type-check Worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    defaults:
+      run:
+        working-directory: cloud-worker
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: cloud-worker/package-lock.json
+
+      - name: Install locked Worker dependencies
+        run: npm ci
+
+      - name: Run Worker tests
+        run: npm test
+
+      - name: Type-check Worker
+        run: npm run typecheck

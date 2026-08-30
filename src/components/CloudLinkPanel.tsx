@@ -21,6 +21,7 @@ import {
   saveCloudLinkState,
   syncCloudCopy,
   uploadThisDevice,
+  verifyCloudEndpoint,
   type CloudLinkState,
   type CloudSyncResult,
 } from "../lib/cloudLink";
@@ -33,7 +34,7 @@ interface CloudLinkPanelProps {
   onSettingsChange: (settings: AppSettings) => void;
 }
 
-type CloudAction = "sync" | "upload" | "download" | null;
+type CloudAction = "link" | "sync" | "upload" | "download" | null;
 
 function formattedSyncTime(value: string | null): string {
   if (!value) return "Never synced";
@@ -59,9 +60,13 @@ export function CloudLinkPanel({ settings, mobileRuntime, onSettingsChange }: Cl
     return saved;
   };
 
-  const pair = (code: string) => {
+  const pair = async (code: string) => {
+    if (busy) return null;
+    setBusy("link");
+    setMessage("Checking the secure cloud vault…");
     try {
-      const next = remember(createCloudLinkState(endpointDraft, code));
+      const verifiedEndpoint = await verifyCloudEndpoint(endpointDraft);
+      const next = remember(createCloudLinkState(verifiedEndpoint, code));
       setMessage("Device linked locally. Upload from the device with the data you want to keep, then download on the other device.");
       setConflict(false);
       setShowCode(true);
@@ -69,13 +74,15 @@ export function CloudLinkPanel({ settings, mobileRuntime, onSettingsChange }: Cl
     } catch (error) {
       setMessage(error instanceof Error ? error.message : String(error));
       return null;
+    } finally {
+      setBusy(null);
     }
   };
 
   const generate = () => {
     const generated = generateCloudLinkCode();
     setCodeDraft(generated);
-    pair(generated);
+    void pair(generated);
   };
 
   const copyCode = async () => {
@@ -177,8 +184,8 @@ export function CloudLinkPanel({ settings, mobileRuntime, onSettingsChange }: Cl
             </div>
           </label>
           <div className="cloud-link-setup-actions">
-            <button type="button" onClick={generate}><KeyRound size={14} /> Generate new code</button>
-            <button type="button" onClick={() => pair(codeDraft)}><Link2 size={14} /> Link existing code</button>
+            <button type="button" disabled={Boolean(busy)} onClick={generate}><KeyRound size={14} /> {busy === "link" ? "Checking vault…" : "Generate new code"}</button>
+            <button type="button" disabled={Boolean(busy)} onClick={() => void pair(codeDraft)}><Link2 size={14} /> {busy === "link" ? "Checking vault…" : "Link existing code"}</button>
           </div>
           <small className="cloud-link-help">On the first device, generate a code and upload. On every other device, enter the same URL and code, then download.</small>
         </div>

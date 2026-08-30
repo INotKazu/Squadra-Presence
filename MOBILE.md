@@ -9,7 +9,6 @@ The mobile target shares the same React, tracker, journal, Star Collection, buil
 - Star Collection Levels 1–255, Total Votes, Zeni, player rank, and unlock pools
 - Fighter builds, card library, Helpers, abilities, expanded guides, and Kazuma's Picks
 - Manual fighter/rank controls and the four-second KazuCorp intro
-- Optional original Evening Link background music with a remembered volume slider and automatic pause while the app is hidden
 - Backup restore from desktop and mobile backup sharing/download
 - Optional end-to-end encrypted cloud linking with the Windows app
 - A phone-specific dashboard, touch targets, full-screen workspaces, and safe-area navigation

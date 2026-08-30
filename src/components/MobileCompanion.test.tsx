@@ -44,13 +44,13 @@ describe("mobile companion surfaces", () => {
 
     expect(markup).toContain("Squadra Companion");
     expect(markup).toContain("Encrypted cloud link");
-    expect(markup).toContain("Background music");
-    expect(markup).toContain("Background music volume");
     expect(markup).toContain("Share backup");
     expect(markup).toContain("while the companion is open");
     expect(markup).not.toContain("Game process hints");
     expect(markup).not.toContain("Start and stop with the game");
     expect(markup).not.toContain("Launch hidden with Windows");
     expect(markup).not.toContain("Application updates");
+    expect(markup).not.toContain("Background music");
+    expect(markup).not.toContain("Music volume");
   });
 });

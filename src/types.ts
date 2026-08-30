@@ -219,8 +219,6 @@ export interface AppSettings {
   starCollectionMaxLevel: number;
   startupAnimation: boolean;
   startupSound: boolean;
-  backgroundMusicEnabled: boolean;
-  backgroundMusicVolume: number;
   autoCheckUpdates: boolean;
   skippedUpdateVersion: string | null;
   overlayEnabled: boolean;

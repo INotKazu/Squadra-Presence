@@ -9,7 +9,6 @@
 - Added end-to-end encrypted PC/Android cloud linking through an optional Cloudflare Worker + D1 vault, including revision conflicts and strict portable-data boundaries.
 - Added the PC-only OBS browser overlay and kept Discord/OBS controls out of the Android companion.
 - Added the Android companion, Frieza-and-Goku launcher branding, refreshed mobile intro, nested Hero tiers, stable touch scrolling, and the corrected Star Overview layout.
-- Added the original 53-second **Evening Link** ambient loop on PC and Android, with an opt-in toggle, remembered volume slider, and automatic pause whenever the app is hidden or the desktop window loses focus.
 
 ## 0.6.2
 

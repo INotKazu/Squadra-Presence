@@ -48,6 +48,13 @@ interface CloudVaultResponse {
   error?: unknown;
 }
 
+interface CloudHealthResponse {
+  ok?: unknown;
+  service?: unknown;
+  encryption?: unknown;
+  error?: unknown;
+}
+
 export class CloudSyncConflictError extends Error {
   constructor(message = "Both this device and the cloud copy changed. Choose Upload this device or Download cloud copy.") {
     super(message);
@@ -183,6 +190,28 @@ async function parseResponse(response: Response): Promise<CloudVaultResponse> {
   } catch {
     return {};
   }
+}
+
+export async function verifyCloudEndpoint(endpoint: string): Promise<string> {
+  const normalized = normalizeCloudEndpoint(endpoint);
+  const response = await requestWithTimeout(`${normalized}/health`, {
+    method: "GET",
+    headers: { Accept: "application/json" },
+  });
+  let body: CloudHealthResponse = {};
+  try {
+    body = await response.json() as CloudHealthResponse;
+  } catch {
+    // The validation below produces the same useful error for HTML or empty responses.
+  }
+  if (!response.ok) {
+    const serverMessage = typeof body.error === "string" ? body.error : null;
+    throw new Error(serverMessage || `Cloud vault health check failed (${response.status}).`);
+  }
+  if (body.ok !== true || body.service !== "squadra-cloud-vault" || body.encryption !== "client-side") {
+    throw new Error("That URL is not a compatible Squadra cloud vault.");
+  }
+  return normalized;
 }
 
 function responseError(response: Response, body: CloudVaultResponse): Error {
