@@ -10,7 +10,8 @@
     "db:local": "wrangler d1 execute squadra-cloud-vault --local --file=schema.sql",
     "db:remote": "wrangler d1 execute squadra-cloud-vault --remote --file=schema.sql",
     "test": "vitest run --config vitest.config.ts test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:live": "node scripts/verify-live.mjs"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^5.20260830.1",
