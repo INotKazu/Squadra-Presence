@@ -11,8 +11,10 @@ checkpoint.
 - Framework base: `d49346f` (`feature/season-7`), which already contains the
   Android companion, encrypted cloud link, and desktop OBS overlay
 - `main` and every remote feature branch remain unchanged
-- The conversion branch has no upstream branch and must not be pushed, merged,
-  released, or published without explicit permission
+- The conversion branch is checkpointed only to
+  `origin/feature/smite-2-conversion` with explicit permission. It must not be
+  merged, opened as a pull request, released, deployed, or published without
+  separate explicit permission
 - SMITE 2 will use distinct storage keys, cloud payload identity, Tauri bundle
   identity, updater target, Discord application, and OBS port before it can run
   beside Squadra
