@@ -1,8 +1,8 @@
 {
     "$schema":  "https://schema.tauri.app/config/2",
-    "productName":  "Squadra Presence",
-    "version":  "0.7.0",
-    "identifier":  "com.kazuma.squadrapresence",
+    "productName":  "KazuCorp SMITE 2 Companion",
+    "version":  "0.1.0",
+    "identifier":  "com.kazucorp.smite2companion",
     "build":  {
                   "beforeDevCommand":  "npm run dev",
                   "devUrl":  "http://localhost:1420",
@@ -12,7 +12,7 @@
     "app":  {
                 "windows":  [
                                 {
-                                    "title":  "Squadra Presence",
+                                    "title":  "KazuCorp SMITE 2 Companion",
                                     "width":  1440,
                                     "height":  900,
                                     "minWidth":  1080,
@@ -25,20 +25,12 @@
                                 }
                             ],
                 "security":  {
-                                 "csp":  "default-src \u0027self\u0027; img-src \u0027self\u0027 asset: data:; style-src \u0027self\u0027 \u0027unsafe-inline\u0027; connect-src \u0027self\u0027 ipc: http://ipc.localhost https://*.workers.dev; frame-src http://127.0.0.1:47612"
+                                 "csp":  "default-src \u0027self\u0027; img-src \u0027self\u0027 asset: data:; style-src \u0027self\u0027 \u0027unsafe-inline\u0027 https://fonts.googleapis.com; font-src \u0027self\u0027 https://fonts.gstatic.com; connect-src \u0027self\u0027 ipc: http://ipc.localhost https://*.workers.dev; frame-src http://127.0.0.1:47622"
                              }
             },
-    "plugins":  {
-                    "updater":  {
-                                    "pubkey":  "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU3QzcxMjJGN0FFMkRDOEMKUldTTTNPSjZMeExINXhrcHRjZGsvb0l0aTNaZFE3YnMwbzJkd1psRXpkS1VsTnBqSjNwcWRHQkcK",
-                                    "endpoints":  [
-                                                      "https://github.com/INotKazu/Squadra-Presence/releases/latest/download/latest.json"
-                                                  ]
-                                }
-                },
     "bundle":  {
                    "active":  true,
-                   "createUpdaterArtifacts":  true,
+                   "createUpdaterArtifacts":  false,
                    "targets":  "all",
                    "icon":  [
                                 "icons/32x32.png",
@@ -46,8 +38,8 @@
                                 "icons/128x128@2x.png",
                                 "icons/icon.ico"
                             ],
-                   "shortDescription":  "Live Discord presence for Gekishin Squadra",
-                   "longDescription":  "An unofficial local-first companion that maps public DBGS Builds tracker data to Discord Rich Presence.",
+                   "shortDescription":  "KazuCorp SMITE 2 desktop companion",
+                   "longDescription":  "An unofficial local-first SMITE 2 companion using SmiteBrain and SmiteSource data with Discord presence, encrypted cloud sync, and an OBS overlay.",
                    "windows":  {
                                    "wix":  {
                                                "language":  "en-US"
