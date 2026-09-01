@@ -6,20 +6,20 @@ use tracker::{fetch_build_guide, fetch_hero_abilities, fetch_tracker_profile};
 #[cfg(desktop)]
 mod app_updates;
 #[cfg(desktop)]
-mod discord;
+mod smite2_discord;
 #[cfg(desktop)]
 mod process;
 #[cfg(desktop)]
-mod overlay;
+mod smite2_overlay;
 
 #[cfg(desktop)]
 use app_updates::{fetch_update, install_update};
 #[cfg(desktop)]
-use discord::{clear_discord_presence, discord_status, set_discord_presence, DiscordService};
+use smite2_discord::{clear_smite2_discord_presence, set_smite2_discord_presence, Smite2DiscordService};
 #[cfg(desktop)]
 use process::detect_game_process;
 #[cfg(desktop)]
-use overlay::{overlay_status, update_overlay_assets, update_overlay_state, OverlayService};
+use smite2_overlay::{smite2_overlay_status, update_smite2_overlay_state, Smite2OverlayService};
 #[cfg(desktop)]
 use tauri::{
     menu::{Menu, MenuItem},
@@ -74,17 +74,17 @@ fn run_app() {
             MacosLauncher::LaunchAgent,
             Some(vec!["--background"]),
         ))
-        .manage(DiscordService::new())
-        .manage(OverlayService::start())
+        .manage(Smite2DiscordService::new())
+        .manage(Smite2OverlayService::start())
         .setup(|app| {
             app_updates::initialize(app)?;
-            let open_item = MenuItem::with_id(app, "open", "Open Squadra Presence", true, None::<&str>)?;
+            let open_item = MenuItem::with_id(app, "open", "Open SMITE 2 Companion", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&open_item, &quit_item])?;
 
             let _tray = TrayIconBuilder::new()
                 .icon(app.default_window_icon().expect("application icon").clone())
-                .tooltip("Squadra Presence")
+                .tooltip("KazuCorp SMITE 2 Companion")
                 .menu(&menu)
                 .show_menu_on_left_click(false)
                 .on_menu_event(|app, event| match event.id.as_ref() {
@@ -122,19 +122,17 @@ fn run_app() {
             fetch_hero_abilities,
             fetch_build_guide,
             detect_game_process,
-            set_discord_presence,
-            clear_discord_presence,
-            discord_status,
+            set_smite2_discord_presence,
+            clear_smite2_discord_presence,
             set_launch_at_login,
             launch_context,
             fetch_update,
             install_update,
-            overlay_status,
-            update_overlay_state,
-            update_overlay_assets
+            smite2_overlay_status,
+            update_smite2_overlay_state
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Squadra Presence");
+        .expect("error while running KazuCorp SMITE 2 Companion");
 }
 
 #[cfg(mobile)]
@@ -147,7 +145,7 @@ fn run_app() {
             launch_context
         ])
         .run(tauri::generate_context!())
-        .expect("error while running Squadra Companion");
+        .expect("error while running SMITE 2 Companion");
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
