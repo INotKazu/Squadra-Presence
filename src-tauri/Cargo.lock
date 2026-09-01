@@ -3688,8 +3688,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "squadra-presence"
-version = "0.7.0"
+name = "kazucorp-smite2-companion"
+version = "0.1.0"
 dependencies = [
  "discord-rich-presence",
  "reqwest 0.12.28",
@@ -3700,7 +3700,6 @@ dependencies = [
  "tauri-build",
  "tauri-plugin-autostart",
  "tauri-plugin-single-instance",
- "tauri-plugin-updater",
  "thiserror 2.0.20",
  "url",
 ]
