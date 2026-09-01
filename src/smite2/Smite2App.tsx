@@ -34,6 +34,13 @@ import {
   saveSmite2Settings,
   type Smite2Settings,
 } from "./storage";
+import {
+  buildSmite2Overlay,
+  buildSmite2Presence,
+  clearSmite2Presence,
+  setSmite2Presence,
+  updateSmite2Overlay,
+} from "./integrations";
 
 export type Smite2Workspace = "overview" | "builds" | "journal" | "gods" | "cloud" | "settings";
 
@@ -273,10 +280,28 @@ export function Smite2Dashboard() {
   const [active, setActive] = useState<Smite2Workspace>("overview");
   const [menuOpen, setMenuOpen] = useState(false);
   const [settings, setSettings] = useState<Smite2Settings>(() => loadSmite2Settings());
+  const [sessionStartedAt] = useState(() => Math.floor(Date.now() / 1_000));
   const updateSettings = (patch: Partial<Smite2Settings>) => setSettings((current) => ({ ...current, ...patch }));
 
   useEffect(() => { saveSmite2Settings(settings); }, [settings]);
   useEffect(() => { document.title = mobile ? "SMITE 2 Companion" : "KazuCorp SMITE 2 Companion"; }, [mobile]);
+  useEffect(() => {
+    if (runtime !== "desktop") return;
+    const payload = buildSmite2Presence(settings, sessionStartedAt);
+    void (settings.presenceEnabled ? setSmite2Presence(payload) : clearSmite2Presence()).catch(() => undefined);
+  }, [runtime, sessionStartedAt, settings]);
+  useEffect(() => {
+    if (runtime !== "desktop") return;
+    const journal = loadSmite2Journal();
+    const wins = journal.matches.filter((match) => match.outcome === "win").length;
+    const losses = journal.matches.filter((match) => match.outcome === "loss").length;
+    const totals = journal.matches.reduce((result, match) => ({
+      kills: result.kills + (match.kills ?? 0),
+      deaths: result.deaths + (match.deaths ?? 0),
+      assists: result.assists + (match.assists ?? 0),
+    }), { kills: 0, deaths: 0, assists: 0 });
+    void updateSmite2Overlay(buildSmite2Overlay(settings, sessionStartedAt, { wins, losses, ...totals })).catch(() => undefined);
+  }, [runtime, sessionStartedAt, settings]);
 
   const navigate = (workspace: Smite2Workspace) => {
     setActive(workspace);
