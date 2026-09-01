@@ -4,16 +4,12 @@ use serde::Serialize;
 use tracker::{fetch_build_guide, fetch_hero_abilities, fetch_tracker_profile};
 
 #[cfg(desktop)]
-mod app_updates;
-#[cfg(desktop)]
 mod smite2_discord;
 #[cfg(desktop)]
 mod process;
 #[cfg(desktop)]
 mod smite2_overlay;
 
-#[cfg(desktop)]
-use app_updates::{fetch_update, install_update};
 #[cfg(desktop)]
 use smite2_discord::{clear_smite2_discord_presence, set_smite2_discord_presence, Smite2DiscordService};
 #[cfg(desktop)]
@@ -77,7 +73,6 @@ fn run_app() {
         .manage(Smite2DiscordService::new())
         .manage(Smite2OverlayService::start())
         .setup(|app| {
-            app_updates::initialize(app)?;
             let open_item = MenuItem::with_id(app, "open", "Open SMITE 2 Companion", true, None::<&str>)?;
             let quit_item = MenuItem::with_id(app, "quit", "Quit", true, None::<&str>)?;
             let menu = Menu::with_items(app, &[&open_item, &quit_item])?;
@@ -126,8 +121,6 @@ fn run_app() {
             clear_smite2_discord_presence,
             set_launch_at_login,
             launch_context,
-            fetch_update,
-            install_update,
             smite2_overlay_status,
             update_smite2_overlay_state
         ])
