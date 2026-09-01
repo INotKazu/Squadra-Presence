@@ -1,14 +1,14 @@
 [package]
-name = "squadra-presence"
-version = "0.7.0"
-description = "Unofficial Dragon Ball Gekishin Squadra Discord Rich Presence companion"
+name = "kazucorp-smite2-companion"
+version = "0.1.0"
+description = "Local-first KazuCorp SMITE 2 PC and mobile companion"
 authors = ["Kazuma / KazuCorp"]
 repository = "https://github.com/INotKazu/Squadra-Presence"
 license-file = "../LICENSE"
 edition = "2021"
 
 [lib]
-name = "squadra_presence_lib"
+name = "kazucorp_smite2_companion_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -28,4 +28,3 @@ sysinfo = "0.39"
 tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-autostart = "2"
 tauri-plugin-single-instance = "2"
-tauri-plugin-updater = "2"
