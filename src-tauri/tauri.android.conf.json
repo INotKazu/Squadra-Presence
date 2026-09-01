@@ -1,11 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Squadra Companion",
-  "identifier": "com.kazucorp.squadracompanion",
+  "productName": "SMITE 2 Companion",
+  "identifier": "com.kazucorp.smite2companion",
   "app": {
     "windows": [
       {
-        "title": "Squadra Companion",
+        "title": "SMITE 2 Companion",
         "fullscreen": false
       }
     ]
@@ -13,8 +13,8 @@
   "bundle": {
     "active": true,
     "createUpdaterArtifacts": false,
-    "shortDescription": "Your local Squadra tracker and build companion",
-    "longDescription": "A local-first mobile companion for tracker history, ranks, Star Collection, fighter builds, cards, helpers, abilities, and portable backups.",
+    "shortDescription": "Your KazuCorp SMITE 2 build and tracker companion",
+    "longDescription": "A local-first SMITE 2 companion for builds, match history, gods, encrypted cloud sync, and portable backups.",
     "android": {
       "minSdkVersion": 24
     }
